@@ -4,3 +4,6 @@
 /.vscode/
 
 .DS_Store
+
+# Local diagnostic output
+/memory-dump.txt
