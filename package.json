@@ -1,59 +1,59 @@
 {
   "name": "ff8-battle-mod",
+  "productName": "FF8 Battle HP",
   "version": "1.0.0",
   "private": true,
-  "description": "External enemy/party HP display for Final Fantasy VIII (2013 Steam). Reads FF8_EN.exe memory only; no network access.",
-  "author": "dw1284 (original author); locally hardened build",
-  "main": "index.js",
-  "build": {
-    "appId": "ff8-battle-mod",
-    "productName": "FF8 Battle HP",
-    "npmRebuild": false,
-    "directories": {
-      "buildResources": "assets",
-      "output": "dist"
-    },
-    "files": [
-      "index.js",
-      "src/**/*",
-      "scripts/**/*",
-      "public/**/*",
-      "!**/*.log",
-      "!test-mem*",
-      "!BUILD-NOTES.md",
-      "!launch.cmd"
-    ],
-    "asarUnpack": [
-      "**/node_modules/memoryjs/**"
-    ],
-    "win": {
-      "target": [
-        "portable"
-      ],
-      "artifactName": "FF8-Battle-HP-${version}-portable.${ext}"
-    }
+  "description": "External battle and party editor for Final Fantasy VIII (2013 Steam). Reads and writes FF8_EN.exe memory locally.",
+  "author": "Dennis Williams (dw1284), maintained by Juan Alb",
+  "type": "module",
+  "main": ".vite/build/main.cjs",
+  "packageManager": "pnpm@11.5.2",
+  "engines": {
+    "node": ">=26.5.0 <27",
+    "pnpm": ">=11.5.0"
   },
   "scripts": {
-    "build": "rollup -c",
-    "dev": "rollup -c -w",
-    "start": "electron .",
-    "pack": "npm run build && electron-builder --dir",
-    "dist": "npm run build && electron-builder --win portable"
-  },
-  "devDependencies": {
-    "@electron/rebuild": "4.2.0",
-    "@rollup/plugin-commonjs": "^17.0.0",
-    "@rollup/plugin-node-resolve": "^11.0.0",
-    "electron": "^13.1.4",
-    "electron-builder": "^22.11.7",
-    "rollup": "^2.3.4",
-    "rollup-plugin-css-only": "^3.1.0",
-    "rollup-plugin-livereload": "^2.0.0",
-    "rollup-plugin-svelte": "^7.0.0",
-    "rollup-plugin-terser": "^7.0.0",
-    "svelte": "^3.0.0"
+    "clean": "node scripts/clean.mjs",
+    "dev": "pnpm clean && concurrently --kill-others --success first -n renderer,main,preload,electron -c cyan,green,magenta,yellow \"pnpm dev:renderer\" \"pnpm dev:main\" \"pnpm dev:preload\" \"pnpm dev:electron\"",
+    "dev:renderer": "vite dev --host 127.0.0.1",
+    "dev:main": "vite build --config vite.main.config.ts --watch",
+    "dev:preload": "vite build --config vite.preload.config.ts --watch",
+    "dev:electron": "wait-on tcp:127.0.0.1:5173 .vite/build/main.cjs .vite/build/preload.cjs && cross-env VITE_DEV_SERVER_URL=http://127.0.0.1:5173 electron-forge start",
+    "build": "pnpm clean && pnpm build:renderer && pnpm build:main && pnpm build:preload",
+    "build:renderer": "vite build",
+    "build:main": "vite build --config vite.main.config.ts",
+    "build:preload": "vite build --config vite.preload.config.ts",
+    "check": "pnpm check:svelte && pnpm check:native",
+    "check:svelte": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check:native": "node ./node_modules/typescript7/bin/tsc -p tsconfig.native.json",
+    "start": "electron-forge start",
+    "package": "pnpm build && electron-forge package",
+    "make": "pnpm build && electron-forge make"
   },
   "dependencies": {
-    "memoryjs": "^3.4.0"
+    "effect": "4.0.0-rc.116",
+    "electron-squirrel-startup": "1.0.1",
+    "koffi": "3.3.1",
+    "lodash": "4.17.21"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "7.11.2",
+    "@electron-forge/maker-squirrel": "7.11.2",
+    "@electron-forge/maker-zip": "7.11.2",
+    "@sveltejs/adapter-static": "3.0.10",
+    "@sveltejs/kit": "2.70.3",
+    "@sveltejs/vite-plugin-svelte": "7.3.0",
+    "@types/electron-squirrel-startup": "1.0.2",
+    "@types/lodash": "4.17.25",
+    "@types/node": "26.6.2",
+    "concurrently": "10.0.5",
+    "cross-env": "10.1.0",
+    "electron": "44.4.3",
+    "svelte": "5.57.1",
+    "svelte-check": "4.7.6",
+    "typescript": "5.9.3",
+    "typescript7": "npm:typescript@7.0.2",
+    "vite": "8.3.0",
+    "wait-on": "9.1.0"
   }
 }

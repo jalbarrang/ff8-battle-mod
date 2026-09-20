@@ -1,48 +1,64 @@
-<script>
-	import _ from 'lodash';
-  
-  export let heightWhenClosed = '6px';                          // How many pixels of the drawer will peek out when its closed (at 0px only the handle shows)
-  export let maxHeight = `calc(100vh - ${heightWhenClosed})`;   // The maximum height that the drawer will expand to when it opens
-  
-  let isOpen = false;
-  let transitionsEnabled = true;
-  let currentHeight, currentWidth; // These are bound to the content container and auto-calculated by svelte
-  
-  function toggleDrawerState() {
-    isOpen = !isOpen;
-  };
-  
-  function disableTransitions() {
+<script lang="ts">
+  import type { Snippet } from 'svelte';
+
+  interface Props {
+    children: Snippet;
+    heightWhenClosed?: string;
+    maxHeight?: string;
+  }
+
+  let {
+    children,
+    heightWhenClosed = '6px',
+    maxHeight = `calc(100vh - ${heightWhenClosed})`
+  }: Props = $props();
+
+  let isOpen = $state(false);
+  let transitionsEnabled = $state(true);
+  let currentHeight = $state(0);
+  let currentWidth = $state(0);
+
+  const drawerStyle = $derived(
+    `max-height: ${maxHeight}; margin-left: -${currentWidth / 2}px; ${
+      transitionsEnabled ? 'transition: bottom .5s;' : ''
+    } ${
+      isOpen
+        ? `bottom: calc(100% - ${currentHeight}px);`
+        : `bottom: calc(100% - ${heightWhenClosed});`
+    }`
+  );
+
+  function disableTransitions(): void {
     transitionsEnabled = false;
-    setTimeout(() => {
+    window.setTimeout(() => {
       transitionsEnabled = true;
     }, 100);
-  };
-  
-  $: drawerStyle = `max-height: ${maxHeight}; margin-left: -${currentWidth / 2}px; ${transitionsEnabled ? 'transition: bottom .5s;' : ''} ${isOpen ? `bottom: calc(100% - ${currentHeight}px);` : `bottom: calc(100% - ${heightWhenClosed});`}`;
+  }
 </script>
 
-<svelte:window on:resize={disableTransitions} />
+<svelte:window onresize={disableTransitions} />
 
 <menu-drawer style={drawerStyle} bind:clientHeight={currentHeight} bind:clientWidth={currentWidth}>
-  <margin-spacer class="left" />
-  <drawer-content><slot /></drawer-content>
-	<drawer-handle on:click={toggleDrawerState}><div>| | | |</div></drawer-handle>
-  <margin-spacer class="right" />
+  <margin-spacer class="left"></margin-spacer>
+  <drawer-content>{@render children()}</drawer-content>
+  <button class="drawer-handle" type="button" aria-label="Toggle party editor" onclick={() => (isOpen = !isOpen)}>
+    <span>| | | |</span>
+  </button>
+  <margin-spacer class="right"></margin-spacer>
 </menu-drawer>
 
 <style>
-	menu-drawer {
+  menu-drawer {
     position: fixed;
     display: flex;
     flex-direction: column;
-		width: calc(100vw - 200px);
+    width: calc(100vw - 200px);
     min-width: 425px;
     left: 50%;
     background: #adadad;
     box-shadow: 0 1px black;
-	}
-  
+  }
+
   margin-spacer {
     position: absolute;
     top: 0;
@@ -52,15 +68,15 @@
     box-shadow: 0 1px black;
     z-index: -3;
   }
-  
+
   margin-spacer.left {
     left: -125px;
   }
-  
+
   margin-spacer.right {
     right: -125px;
   }
-  
+
   menu-drawer:before {
     content: '';
     position: absolute;
@@ -74,7 +90,7 @@
     box-shadow: -2px 1px black;
     z-index: -2;
   }
-  
+
   menu-drawer:after {
     content: '';
     position: absolute;
@@ -88,15 +104,15 @@
     box-shadow: 3px 1px black;
     z-index: -2;
   }
-  
+
   drawer-content {
     flex-grow: 1;
     margin-bottom: 15px;
     background: inherit;
     overflow: hidden;
   }
-  
-  drawer-handle {
+
+  .drawer-handle {
     position: absolute;
     display: flex;
     justify-content: center;
@@ -114,8 +130,8 @@
     cursor: pointer;
     user-select: none;
   }
-  
-  drawer-handle:before {
+
+  .drawer-handle:before {
     content: '';
     position: absolute;
     top: 0;
@@ -126,10 +142,10 @@
     transform-origin: 0 100%;
     transform: skew(45deg);
     z-index: -1;
-    box-shadow: -1px .5px black;
+    box-shadow: -1px 0.5px black;
   }
-  
-  drawer-handle:after {
+
+  .drawer-handle:after {
     content: '';
     position: absolute;
     top: 0;
@@ -140,10 +156,10 @@
     transform-origin: 0 100%;
     transform: skew(-45deg);
     z-index: -1;
-    box-shadow: 2px .5px black;
+    box-shadow: 2px 0.5px black;
   }
-  
-  drawer-handle div {
+
+  .drawer-handle span {
     position: relative;
     top: -2px;
   }

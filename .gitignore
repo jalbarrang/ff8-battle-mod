@@ -1,9 +1,11 @@
 /node_modules/
-/public/build/
+/.svelte-kit/
+/.vite/
+/build/
 /dist/
+/out/
 /.vscode/
 
+*.log
 .DS_Store
-
-# Local diagnostic output
 /memory-dump.txt

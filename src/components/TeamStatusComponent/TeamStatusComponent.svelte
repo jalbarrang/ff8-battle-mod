@@ -1,34 +1,39 @@
-<script>
-	import _ from 'lodash';
-	import TeamCharacterStatusComponent from './TeamCharacterStatusComponent/TeamCharacterStatusComponent.svelte';
-	
-	export let teamMembers;
-  export let onTeamMemberChange;
-	
-	$: editableTeamMembers = _.filter(teamMembers, 'isAvailable');
+<script lang="ts">
+  import type { CharacterUpdate, TeamMember } from '$lib/types/game';
+  import TeamCharacterStatusComponent from './TeamCharacterStatusComponent/TeamCharacterStatusComponent.svelte';
+
+  interface Props {
+    teamMembers: TeamMember[];
+    onTeamMemberChange: (name: string, data: CharacterUpdate) => void;
+  }
+
+  let { teamMembers, onTeamMemberChange }: Props = $props();
+  const editableTeamMembers = $derived(teamMembers.filter((member) => member.isAvailable));
 </script>
 
 <team-status>
-	<team-members>
-    <!-- Render each team member -->
-		{#each editableTeamMembers as teamMember}
-			<TeamCharacterStatusComponent character={_.cloneDeep(teamMember)} onTeamCharacterStatusChange={onTeamMemberChange} />
-		{/each}
-    <!-- The below is purely for spacing. We add empty slots at the end which forces the last rendered item to
-         appear on the left side of the flex grid (lined up with the item above it) instead of center window -->
-		{#each editableTeamMembers as teamMember}<spacer />{/each}
-	</team-members>
+  <team-member-list>
+    {#each editableTeamMembers as teamMember (teamMember.id)}
+      <TeamCharacterStatusComponent
+        character={structuredClone(teamMember)}
+        onTeamCharacterStatusChange={onTeamMemberChange}
+      />
+    {/each}
+    {#each editableTeamMembers as teamMember (teamMember.id)}
+      <spacer aria-hidden="true"></spacer>
+    {/each}
+  </team-member-list>
 </team-status>
 
 <style>
-	team-members {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: space-evenly;
-		padding: 20px;
-	}
-	
-	spacer {
-		width: 336px;
-	}
+  team-member-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    padding: 20px;
+  }
+
+  spacer {
+    width: 336px;
+  }
 </style>

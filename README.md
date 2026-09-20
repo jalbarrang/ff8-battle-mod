@@ -1,115 +1,87 @@
 # FF8 Battle and Party Editor
 
-A custom tool which allows you to tinker with your FF8 gameplay experience in real time.
+A Windows desktop tool for editing Final Fantasy VIII gameplay state in real time.
 
-* Edit your team
-* Edit your party
-* Edit your inventory
-* Manipulate enemies in battle
-* Disable field battles
+- Edit party composition and character availability
+- Edit character levels, HP, magic, and inventory-related values
+- Display and manipulate enemies during battle
+- Disable enemy attacks and field battles
 
-Works with Steam English version **FF8_EN.exe**.
+The memory map targets the English Steam 2013 executable: **`FF8_EN.exe`**.
 
-## Features
------------
-### Edit your party
+> This is a fork of [dw1284/ff8-battle-mod](https://github.com/dw1284/ff8-battle-mod), originally created by Dennis Williams. The modernized fork is maintained at [jalbarrang/ff8-battle-mod](https://github.com/jalbarrang/ff8-battle-mod).
 
-Swap characters into your party at any time...even characters you do not have access to yet.
+## Safety model
 
-![Party Editor](./assets/party_edit.gif)
+The application reads and writes the running `FF8_EN.exe` process through Win32 APIs. It does not patch the executable on disk.
 
-### Edit your stats
+The Electron renderer is isolated and sandboxed:
 
-Edit your character's level, hp, inventory, and more.
+- `nodeIntegration` is disabled
+- `contextIsolation` and the Chromium sandbox are enabled
+- all Chromium permission requests are denied
+- production network requests and external navigation are blocked
+- the preload exposes only a small, typed FF8 IPC API
 
-![Inventory Editor](./assets/inventory_edit.gif)
+## Requirements
 
-# Development
+- Windows x64
+- Node.js `26.5.x`
+- pnpm `11.5.x`
+- Final Fantasy VIII 2013 Steam English release for runtime use
 
-**Setup and run:**
+## Development
 
-- npm install
-- npm run dev
-
-**Notes:**
-
-Project will automatically recompile after changing files  
-CTRL+R to refresh the window
-
-# Distribution
-
-**Build only:**
-
-- npm run pack
-
-**Build and create installer:**
-
-- npm run dist
-
-**Notes:**
-
-Your install files and setup.exe file will be found in the /dist folder  
-If you just want to run the app exe directly, it can be found in /dist/win-unpacked (this is what will be installed when users run Setup.exe)  
-If you want to install the app, run /dist/ff8-battle-mod Setup 1.0.0.exe
-
-# Svelte Stuff
-
-*Looking for a shareable component template? Go here --> [sveltejs/component-template](https://github.com/sveltejs/component-template)*
-
----
-
-## svelte app
-
-This is a project template for [Svelte](https://svelte.dev) apps. It lives at https://github.com/sveltejs/template.
-
-To create a new project based on this template using [degit](https://github.com/Rich-Harris/degit):
-
-```bash
-npx degit sveltejs/template svelte-app
-cd svelte-app
+```powershell
+pnpm install --frozen-lockfile
+pnpm dev
 ```
 
-*Note that you will need to have [Node.js](https://nodejs.org) installed.*
+Useful commands:
 
-
-### Get started
-
-Install the dependencies...
-
-```bash
-cd svelte-app
-npm install
+```powershell
+pnpm check          # Svelte checks plus native TypeScript 7 checks
+pnpm build          # SvelteKit renderer + Electron main/preload bundles
+pnpm package        # unpacked Electron application
+pnpm make           # Squirrel installer and portable ZIP
 ```
 
-...then start [Rollup](https://rollupjs.org):
+Build output is written under `out/`:
 
-```bash
-npm run dev
-```
+- `out/make/squirrel.windows/x64/FF8-Battle-HP-Setup.exe`
+- `out/make/zip/win32/x64/FF8 Battle HP-win32-x64-1.0.0.zip`
 
-Navigate to [localhost:5000](http://localhost:5000). You should see your app running. Edit a component file in `src`, save it, and reload the page to see your changes.
+## Technology
 
-By default, the server will only respond to requests from localhost. To allow connections from other computers, edit the `sirv` commands in package.json to include the option `--host 0.0.0.0`.
+- Electron 44
+- SvelteKit 2 and Svelte 5
+- Vite 8
+- TypeScript 7 for native `.ts` validation
+- Effect 4 RC for the process-watcher fiber lifecycle
+- Koffi 3 for Win32 process-memory access
+- Electron Forge 7 for packaging
+- pnpm 11 on Node 26
 
-If you're using [Visual Studio Code](https://code.visualstudio.com/) we recommend installing the official extension [Svelte for VS Code](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode). If you are using other editors you may need to install a plugin in order to get syntax highlighting and intellisense.
+### TypeScript compatibility split
 
-### Building and running in production mode
+Current SvelteKit and `svelte-check` releases still consume the legacy JavaScript compiler API, which TypeScript 7 removed. The project therefore uses:
 
-To create an optimised version of the app:
+- TypeScript 5.9 for Svelte language tooling
+- TypeScript 7.0, installed under the `typescript7` alias, for `src/main`, `src/preload`, shared native types, and Vite config validation
 
-```bash
-npm run build
-```
+`pnpm check` runs both toolchains. This split can be removed once Svelte's tooling supports TypeScript 7 directly.
 
-You can run the newly built app with `npm run start`. This uses [sirv](https://github.com/lukeed/sirv), which is included in your package.json's `dependencies` so that the app will work when you deploy to platforms like [Heroku](https://heroku.com).
+### Node 26 packaging compatibility
 
+Electron Forge 7 currently resolves older packager internals. `pnpm-workspace.yaml` pins Node-26-compatible `@electron/packager` and `@electron/rebuild` releases. Small tracked patches under `patches/` adapt Forge's hook API and replace the removed `fs.rmdir({ recursive: true })` call in `cross-zip`.
 
-### Single-page app mode
+## Architecture
 
-By default, sirv will only respond to requests that match files in `public`. This is to maximise compatibility with static fileservers, allowing you to deploy your app anywhere.
+- `src/main/` — Electron lifecycle, security policy, FF8 watcher, Win32 memory adapter
+- `src/preload/` — constrained context bridge
+- `src/routes/` — SvelteKit renderer
+- `src/components/` — Svelte 5 UI components
+- `src/lib/types/` — renderer/preload contracts
+- `src/main/ff8/config/` — reverse-engineered FF8 memory map and character encoding
 
-If you're building a single-page app (SPA) with multiple routes, sirv needs to be able to respond to requests for *any* path. You can make it so by editing the `"start"` command in package.json:
-
-```js
-"start": "sirv public --single"
-```
+See [BUILD-NOTES.md](./BUILD-NOTES.md) for packaging and validation details.

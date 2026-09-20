@@ -1,50 +1,72 @@
-# ff8-battle-mod — local build notes
+# Modern build notes
 
-Original: https://github.com/dw1284/ff8-battle-mod (no releases/tags published).
+## Supported game
 
-## What this is
-An external window that shows enemy (and party) HP in battle by reading
-`FF8_EN.exe` memory. Numeric HP, not an in-game bar. It does NOT modify the
-game exe, so it is compatible with Junction VIII's exe hash whitelist,
-FFNx, and Maelstrom (Maelstrom edits data files, not these runtime structs).
+The memory addresses target the English 2013 Steam release running as `FF8_EN.exe`. The application accesses runtime memory only and does not modify the executable on disk.
 
-## Privacy / safety (hardened in index.js)
-- No network code in the app at all. The only `https://` strings in the bundle
-  are lodash license comments.
-- `index.js` denies EVERY Chromium permission request/check (so geolocation,
-  notifications, media, etc. can never be granted).
-- `index.js` cancels every non-local request in `webRequest.onBeforeRequest`,
-  so `http`/`https`/`ws` cannot be reached. `will-navigate` and window-open are
-  denied too.
-- DevTools is no longer opened.
-- Verified: `permissions=denied`, `getCurrentPosition=DENIED`,
-  `fetch('https://example.com')=BLOCKED`, remote `<img>=BLOCKED`.
-- `sirv-cli` (unused static file server, was still a dependency) was removed.
+## Toolchain
 
-## Overlay behavior
-- Always on top (`screen-saver` level), no app menu, no DevTools.
-- Window position/size persisted to `%APPDATA%\ff8-battle-mod\window-state.json`.
-- Default 540x360, resizable.
+- Node.js 26.5.x
+- pnpm 11.5.x with the hoisted linker required by Electron Forge
+- Electron 44.4.3
+- Electron Forge 7.11.2
+- SvelteKit 2.70.3 / Svelte 5.57.1 / Vite 8.3.0
+- Effect 4.0.0-rc.116, pinned because v4 is not yet generally available
+- Koffi 3.3.1
 
-## Build recipe (Windows, Node 26 + VS2022 Build Tools, Python 3.14)
-1. `npm install --ignore-scripts --engine-strict=false --force`
-   (old `concentrate@0.2.3` trips npm's engine-strict default.)
-2. Ensure Electron 13.1.4 is extracted into `node_modules/electron/dist`
-   (its installer can leave only `locales`; extract the cached zip manually and
-   write `electron.exe` into `node_modules/electron/path.txt`).
-3. `npm i -D @electron/rebuild --ignore-scripts --engine-strict=false --force`
-4. `GYP_DEFINES="openssl_fips=" npx electron-rebuild -v 13.1.4 -f -w memoryjs`
-   (Node 26 removed `openssl_fips`, which old gyp files require.)
-5. `npm run build`
-6. Run from source: `launch.cmd` (or `node_modules\electron\dist\electron.exe .`)
+The exact versions are intentionally pinned in `package.json` and `pnpm-lock.yaml`.
 
-## Standalone build
-`npx electron-builder --win portable`
-Output: `dist/FF8-Battle-HP-1.0.0-portable.exe` (bundles Electron + memoryjs;
-no Node install required). Native addon is unpacked to
-`resources/app.asar.unpacked/node_modules/memoryjs/`.
+## TypeScript 7
 
-## Usage
-1. Start FF8 (2013 Steam, `FF8_EN.exe`) via J8/FFNx and enter a battle.
-2. Run `dist/FF8-Battle-HP-1.0.0-portable.exe`.
-3. Enemy names + current/max HP appear; click a number to edit.
+TypeScript 7 is the native compiler and no longer exposes the JavaScript compiler API expected by current Svelte tooling. This repository uses a temporary dual setup:
+
+- `typescript@5.9.3` for SvelteKit and `svelte-check`
+- `typescript7`, an alias for `typescript@7.0.2`, for `pnpm check:native`
+
+The TS7 check covers Electron main/preload code, FF8 memory code, shared native types, and Vite configs.
+
+## Native memory access
+
+The old `memoryjs` dependency was removed. `src/main/ff8/memory.ts` calls these Win32 APIs through Koffi:
+
+- `CreateToolhelp32Snapshot`
+- `Process32FirstW` / `Process32NextW`
+- `OpenProcess`
+- `ReadProcessMemory`
+- `WriteProcessMemory`
+- `CloseHandle`
+
+Koffi and `@koromix/koffi-win32-x64` are explicitly retained and unpacked from ASAR by `forge.config.cjs`.
+
+## Node 26 Forge patches
+
+Forge 7.11.2 still depends on `@electron/packager` 18 and `@electron/rebuild` 3, which do not complete packaging correctly under Node 26. The workspace overrides them with versions 20.3.0 and 4.2.0.
+
+Packager 20 changed hooks from callback arguments to Promise-based option objects, so `patches/@electron-forge__core@7.11.2.patch` adapts Forge's compatibility wrappers. Node 26 also removed recursive `fs.rmdir`; `patches/cross-zip@4.0.1.patch` replaces it with `fs.rm`.
+
+## Commands
+
+```powershell
+pnpm install --frozen-lockfile
+pnpm check
+pnpm build
+pnpm package
+pnpm make
+```
+
+`pnpm make` emits:
+
+- Squirrel installer: `out/make/squirrel.windows/x64/FF8-Battle-HP-Setup.exe`
+- Portable ZIP: `out/make/zip/win32/x64/FF8 Battle HP-win32-x64-1.0.0.zip`
+
+## Verification performed during migration
+
+- Svelte checker: zero errors and warnings
+- TypeScript 7 native check: zero errors
+- Vite production builds: successful
+- Forge package: successful
+- Forge Squirrel and ZIP makers: successful
+- Packaged Electron app: launched from ASAR with Koffi's native binary present
+- Renderer smoke test: expected process-search screen rendered with production styles and no console errors
+
+A live FF8 process was not available during migration, so final read/write validation against the game still needs an in-battle smoke test.

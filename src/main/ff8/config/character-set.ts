@@ -2,7 +2,7 @@
 // We need to be able to decode the text in order to find things
 // like character names, enemy names, etc.
 
-module.exports = {
+const characterSet: Record<number, string> = {
   32: ' ', 33: '0', 34: '1', 35: '2', 36: '3',  37: '4', 38: '5', 39: '6', 40: '7',
   41: '8', 42: '9', 43: '%', 44: '/', 45: ':', 46: '!', 47: '?', 48: '⋯', 49: '+',
   50: '-', 51: '=', 52: '*', 53: '&', 54: '「', 55: '」', 56: '(', 57: ')', 58: '·',
@@ -20,3 +20,5 @@ module.exports = {
   158: 'ñ', 159: 'ò', 160: 'ó', 161: 'ô', 162: 'ö', 163: 'ù', 164: 'ú', 165: 'û', 166: 'ü',
   167: 'œ'
 };
+
+export default characterSet;

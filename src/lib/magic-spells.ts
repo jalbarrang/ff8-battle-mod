@@ -1,4 +1,10 @@
-export default [
+export interface MagicSpell {
+  id: number;
+  name: string;
+  hpBonusModifier: number;
+}
+
+const magicSpells: MagicSpell[] = [
   {id: 0, name: 'None', hpBonusModifier: 0},
   {id: 1, name: 'Fire', hpBonusModifier: 1},
   {id: 2, name: 'Fira', hpBonusModifier: 2},
@@ -57,3 +63,5 @@ export default [
   {id: 55, name: 'Catastrophe', hpBonusModifier: 0},
   {id: 56, name: 'The End', hpBonusModifier: 0},
 ];
+
+export default magicSpells;

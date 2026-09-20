@@ -1,28 +1,55 @@
-<script>
-  import _ from 'lodash';
-  
-	export let value, min, max, onKeypress = _.noop, onInit = _.noop;
-  // export let step = 1, precision = 0; // not implemented yet
-  
-  function onWrappedKeypress(e) {
-    const invalidChars = ['-', '+', 'e', '.'];
-    if (_.includes(invalidChars, e.key))
-      e.preventDefault();
-    else
-      onKeypress ? onKeypress(e) : _.noop();
+<script lang="ts">
+  import type { Action } from 'svelte/action';
+
+  interface Props {
+    value: number;
+    min?: number;
+    max?: number;
+    onChange?: (event: Event) => void;
+    onInit?: (element: HTMLInputElement) => void;
+    onKeydown?: (event: KeyboardEvent) => void;
+    onKeypress?: (event: KeyboardEvent) => void;
+  }
+
+  let {
+    value = $bindable(),
+    min,
+    max,
+    onChange,
+    onInit = () => undefined,
+    onKeydown,
+    onKeypress
+  }: Props = $props();
+
+  const initialize: Action<HTMLInputElement> = (element) => {
+    onInit(element);
   };
+
+  function handleKeypress(event: KeyboardEvent): void {
+    if (['-', '+', 'e', '.'].includes(event.key)) event.preventDefault();
+    else onKeypress?.(event);
+  }
 </script>
 
 <numeric-input>
-  <input type="number" {min} {max} bind:value={value} on:keypress={onWrappedKeypress} on:change on:keydown use:onInit />
+  <input
+    type="number"
+    {min}
+    {max}
+    bind:value
+    onkeypress={handleKeypress}
+    onchange={onChange}
+    onkeydown={onKeydown}
+    use:initialize
+  />
 </numeric-input>
 
 <style>
   numeric-input {
     display: flex;
   }
-  
-  input[type=number]::-webkit-inner-spin-button {
-    opacity: 1
+
+  input[type='number']::-webkit-inner-spin-button {
+    opacity: 1;
   }
 </style>

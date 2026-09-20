@@ -1,10 +1,20 @@
-const _ = require('lodash');
-const characterSet = require('../configs/character-set');
+import _ from 'lodash';
 
-const defaultValueTransformerOut = vals => vals[0];
-const defaultValueTransformerIn = val => [val];
+import type { MemoryAddressConfig, MemoryValue } from '../types';
+import characterSet from './character-set';
 
-module.exports = {
+const defaultValueTransformerOut = (values: MemoryValue[]): MemoryValue => values[0];
+const defaultValueTransformerIn = (value: MemoryValue): MemoryValue[] => [value];
+const decodeText = (values: MemoryValue[]): string => {
+  const bytes = (values[0] ?? []) as number[];
+  const nullIndex = bytes.indexOf(0);
+  return bytes
+    .slice(0, nullIndex === -1 ? bytes.length : nullIndex)
+    .map((characterCode) => characterSet[characterCode] ?? '')
+    .join('');
+};
+
+const memoryAddressConfig: MemoryAddressConfig = {
   menuIsOpen: {
     locations: [{
       address:0x01D2A27C,
@@ -96,7 +106,7 @@ module.exports = {
       type: 'bytes',
       size: 14
     }],
-    valueTransformerOut: vals => _.map(_.dropRight(vals[0], _.size(vals[0]) - (_.indexOf(vals[0], 0) > -1 ? _.indexOf(vals[0], 0) : _.size(vals[0]))), charCode => _.get(characterSet, charCode)).join(''),
+    valueTransformerOut: decodeText,
     valueTransformerIn: defaultValueTransformerIn
   },
   isDeadEnemy1: {
@@ -377,7 +387,7 @@ module.exports = {
       type: 'bytes',
       size: 14,
     }],
-    valueTransformerOut: vals => _.map(_.dropRight(vals[0], _.size(vals[0]) - (_.indexOf(vals[0], 0) > -1 ? _.indexOf(vals[0], 0) : _.size(vals[0]))), charCode => _.get(characterSet, charCode)).join(''),
+    valueTransformerOut: decodeText,
     valueTransformerIn: defaultValueTransformerIn
   },
   isDeadEnemy2: {
@@ -658,7 +668,7 @@ module.exports = {
       type: 'bytes',
       size: 14,
     }],
-    valueTransformerOut: vals => _.map(_.dropRight(vals[0], _.size(vals[0]) - (_.indexOf(vals[0], 0) > -1 ? _.indexOf(vals[0], 0) : _.size(vals[0]))), charCode => _.get(characterSet, charCode)).join(''),
+    valueTransformerOut: decodeText,
     valueTransformerIn: defaultValueTransformerIn
   },
   isDeadEnemy3: {
@@ -939,7 +949,7 @@ module.exports = {
       type: 'bytes',
       size: 14,
     }],
-    valueTransformerOut: vals => _.map(_.dropRight(vals[0], _.size(vals[0]) - (_.indexOf(vals[0], 0) > -1 ? _.indexOf(vals[0], 0) : _.size(vals[0]))), charCode => _.get(characterSet, charCode)).join(''),
+    valueTransformerOut: decodeText,
     valueTransformerIn: defaultValueTransformerIn
   },
   isDeadEnemy4: {
@@ -1314,7 +1324,7 @@ module.exports = {
       type: 'bytes',
       size: 7,
     }],
-    valueTransformerOut: vals => _.map(_.dropRight(vals[0], _.size(vals[0]) - (_.indexOf(vals[0], 0) > -1 ? _.indexOf(vals[0], 0) : _.size(vals[0]))), charCode => _.get(characterSet, charCode)).join(''),
+    valueTransformerOut: decodeText,
     valueTransformerIn: defaultValueTransformerIn
   },
   currentHealthTeamMemberSquall: {
@@ -1405,7 +1415,7 @@ module.exports = {
       type: 'bytes',
       size: 4,
     }],
-    valueTransformerOut: vals => _.map(_.dropRight(vals[0], _.size(vals[0]) - (_.indexOf(vals[0], 0) > -1 ? _.indexOf(vals[0], 0) : _.size(vals[0]))), charCode => _.get(characterSet, charCode)).join(''),
+    valueTransformerOut: decodeText,
     valueTransformerIn: defaultValueTransformerIn
   },
   currentHealthTeamMemberZell: {
@@ -1496,7 +1506,7 @@ module.exports = {
       type: 'bytes',
       size: 6,
     }],
-    valueTransformerOut: vals => _.map(_.dropRight(vals[0], _.size(vals[0]) - (_.indexOf(vals[0], 0) > -1 ? _.indexOf(vals[0], 0) : _.size(vals[0]))), charCode => _.get(characterSet, charCode)).join(''),
+    valueTransformerOut: decodeText,
     valueTransformerIn: defaultValueTransformerIn
   },
   currentHealthTeamMemberIrvine: {
@@ -1587,7 +1597,7 @@ module.exports = {
       type: 'bytes',
       size: 7,
     }],
-    valueTransformerOut: vals => _.map(_.dropRight(vals[0], _.size(vals[0]) - (_.indexOf(vals[0], 0) > -1 ? _.indexOf(vals[0], 0) : _.size(vals[0]))), charCode => _.get(characterSet, charCode)).join(''),
+    valueTransformerOut: decodeText,
     valueTransformerIn: defaultValueTransformerIn
   },
   currentHealthTeamMemberQuistis: {
@@ -1678,7 +1688,7 @@ module.exports = {
       type: 'bytes',
       size: 7,
     }],
-    valueTransformerOut: vals => _.map(_.dropRight(vals[0], _.size(vals[0]) - (_.indexOf(vals[0], 0) > -1 ? _.indexOf(vals[0], 0) : _.size(vals[0]))), charCode => _.get(characterSet, charCode)).join(''),
+    valueTransformerOut: decodeText,
     valueTransformerIn: defaultValueTransformerIn
   },
   currentHealthTeamMemberRinoa: {
@@ -1769,7 +1779,7 @@ module.exports = {
       type: 'bytes',
       size: 7,
     }],
-    valueTransformerOut: vals => _.map(_.dropRight(vals[0], _.size(vals[0]) - (_.indexOf(vals[0], 0) > -1 ? _.indexOf(vals[0], 0) : _.size(vals[0]))), charCode => _.get(characterSet, charCode)).join(''),
+    valueTransformerOut: decodeText,
     valueTransformerIn: defaultValueTransformerIn
   },
   currentHealthTeamMemberSelphie: {
@@ -1860,7 +1870,7 @@ module.exports = {
       type: 'bytes',
       size: 6,
     }],
-    valueTransformerOut: vals => _.map(_.dropRight(vals[0], _.size(vals[0]) - (_.indexOf(vals[0], 0) > -1 ? _.indexOf(vals[0], 0) : _.size(vals[0]))), charCode => _.get(characterSet, charCode)).join(''),
+    valueTransformerOut: decodeText,
     valueTransformerIn: defaultValueTransformerIn
   },
   currentHealthTeamMemberSeifer: {
@@ -1951,7 +1961,7 @@ module.exports = {
       type: 'bytes',
       size: 4,
     }],
-    valueTransformerOut: vals => _.map(_.dropRight(vals[0], _.size(vals[0]) - (_.indexOf(vals[0], 0) > -1 ? _.indexOf(vals[0], 0) : _.size(vals[0]))), charCode => _.get(characterSet, charCode)).join(''),
+    valueTransformerOut: decodeText,
     valueTransformerIn: defaultValueTransformerIn
   },
   currentHealthTeamMemberEdea: {
@@ -2005,3 +2015,5 @@ module.exports = {
     valueTransformerIn: val => [val ? 1 : 0]
   },
 };
+
+export default memoryAddressConfig;

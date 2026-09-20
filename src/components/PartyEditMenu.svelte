@@ -1,68 +1,115 @@
-<script>
-  import _ from 'lodash';
-  
-	export let partyMembers;
-  export let teamMembers;
-  export let onPartyMemberChange;
-  export let onTeamMemberChange;
-  export let disabled;
-  
-  function onSelectChange() {
-    _.each(partyMembers, partyMember => {
-      onPartyMemberChange(partyMember.id, {teamMemberId: partyMember.teamMemberId});
+<script lang="ts">
+  import type { BattleCharacter, CharacterUpdate, TeamMember } from '$lib/types/game';
+
+  interface Props {
+    partyMembers: BattleCharacter[];
+    teamMembers: TeamMember[];
+    onPartyMemberChange: (id: number, data: CharacterUpdate) => void;
+    onTeamMemberChange: (name: string, data: CharacterUpdate) => void;
+    disabled: boolean | string[];
+  }
+
+  let {
+    partyMembers,
+    teamMembers,
+    onPartyMemberChange,
+    onTeamMemberChange,
+    disabled
+  }: Props = $props();
+
+  const availableForSlot = (slot: number): TeamMember[] => [
+    { id: 255, name: '', displayName: '' },
+    ...teamMembers.filter(
+      (member) =>
+        member.isAvailable &&
+        partyMembers.every(
+          (partyMember, index) => index === slot || partyMember.teamMemberId !== member.id
+        )
+    )
+  ];
+
+  const slot1AvailableTeamMembers = $derived(availableForSlot(0));
+  const slot2AvailableTeamMembers = $derived(availableForSlot(1));
+  const slot3AvailableTeamMembers = $derived(availableForSlot(2));
+
+  function isDisabled(setting: string): boolean {
+    return disabled === true || (Array.isArray(disabled) && disabled.includes(setting));
+  }
+
+  function onSelectChange(slot: number, event: Event): void {
+    const member = partyMembers[slot];
+    if (!member) return;
+    onPartyMemberChange(member.id, {
+      teamMemberId: Number((event.currentTarget as HTMLSelectElement).value)
     });
-  };
-  
-  function onCheckboxChange() {
-    _.each(teamMembers, teamMember => {
-      onTeamMemberChange(teamMember.name, {isAvailable: teamMember.isAvailable});
+  }
+
+  function onCheckboxChange(member: TeamMember, event: Event): void {
+    onTeamMemberChange(member.name, {
+      isAvailable: (event.currentTarget as HTMLInputElement).checked
     });
-  };
-  
-  // Computed values
-  $: slot1AvailableTeamMembers = [{id: 255, displayName: ''}, ..._.filter(_.filter(teamMembers, 'isAvailable'), teamMember => {return teamMember.id !== partyMembers[1].teamMemberId && teamMember.id !== partyMembers[2].teamMemberId})];
-  $: slot2AvailableTeamMembers = [{id: 255, displayName: ''}, ..._.filter(_.filter(teamMembers, 'isAvailable'), teamMember => {return teamMember.id !== partyMembers[0].teamMemberId && teamMember.id !== partyMembers[2].teamMemberId})];
-  $: slot3AvailableTeamMembers = [{id: 255, displayName: ''}, ..._.filter(_.filter(teamMembers, 'isAvailable'), teamMember => {return teamMember.id !== partyMembers[0].teamMemberId && teamMember.id !== partyMembers[1].teamMemberId})];
+  }
 </script>
 
 <party-edit-menu>
-  <settings>
-    <setting>
+  <settings-panel>
+    <setting-row>
       <setting-name>Team Members:</setting-name>
-      <options class="team-availability">
+      <setting-options class="team-availability">
         {#each teamMembers as teamMember}
           <label>
-            <input type="checkbox" bind:checked={teamMember.isAvailable} on:change={onCheckboxChange} disabled={disabled === true || _.includes(disabled, 'team-availability')}>
-            {_.get(teamMember, 'displayName', '')}
+            <input
+              type="checkbox"
+              checked={teamMember.isAvailable}
+              onchange={(event) => onCheckboxChange(teamMember, event)}
+              disabled={isDisabled('team-availability')}
+            />
+            {teamMember.displayName ?? ''}
           </label>
         {/each}
-      </options>
-    </setting>
-    <setting>
+      </setting-options>
+    </setting-row>
+    <setting-row>
       <setting-name>Main Party:</setting-name>
-      <options class="main-party">
-        <!-- svelte-ignore a11y-no-onchange -->
-        <select bind:value={partyMembers[0].teamMemberId} on:change={onSelectChange} disabled={disabled === true || _.includes(disabled, 'main-party')}>
-          {#each slot1AvailableTeamMembers as teamMember}<option value={teamMember.id}>{teamMember.displayName}</option>{/each}
+      <setting-options class="main-party">
+        <select
+          value={partyMembers[0]?.teamMemberId}
+          onchange={(event) => onSelectChange(0, event)}
+          disabled={isDisabled('main-party')}
+          aria-label="Party slot 1"
+        >
+          {#each slot1AvailableTeamMembers as teamMember}
+            <option value={teamMember.id}>{teamMember.displayName}</option>
+          {/each}
         </select>
-        <!-- svelte-ignore a11y-no-onchange -->
-        <select bind:value={partyMembers[1].teamMemberId} on:change={onSelectChange} disabled={disabled === true || _.includes(disabled, 'main-party')}>
-          {#each slot2AvailableTeamMembers as teamMember}<option value={teamMember.id}>{teamMember.displayName}</option>{/each}
+        <select
+          value={partyMembers[1]?.teamMemberId}
+          onchange={(event) => onSelectChange(1, event)}
+          disabled={isDisabled('main-party')}
+          aria-label="Party slot 2"
+        >
+          {#each slot2AvailableTeamMembers as teamMember}
+            <option value={teamMember.id}>{teamMember.displayName}</option>
+          {/each}
         </select>
-        <!-- svelte-ignore a11y-no-onchange -->
-        <select bind:value={partyMembers[2].teamMemberId} on:change={onSelectChange} disabled={disabled === true || _.includes(disabled, 'main-party')}>
-          {#each slot3AvailableTeamMembers as teamMember}<option value={teamMember.id}>{teamMember.displayName}</option>{/each}
+        <select
+          value={partyMembers[2]?.teamMemberId}
+          onchange={(event) => onSelectChange(2, event)}
+          disabled={isDisabled('main-party')}
+          aria-label="Party slot 3"
+        >
+          {#each slot3AvailableTeamMembers as teamMember}
+            <option value={teamMember.id}>{teamMember.displayName}</option>
+          {/each}
         </select>
-      </options>
-    </setting>
-  </settings>
-  <note>
-    Some setting require that you be out of the FF8 menu before they become editable
-  </note>
+      </setting-options>
+    </setting-row>
+  </settings-panel>
+  <note-text>Some settings require that you be out of the FF8 menu before they become editable</note-text>
 </party-edit-menu>
 
 <style>
-	party-edit-menu {
+  party-edit-menu {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -70,52 +117,49 @@
     padding: 10px;
     height: 95%;
   }
-  
-  settings {
+
+  settings-panel {
     display: flex;
     flex-direction: column;
     width: 510px;
   }
-  
-  setting {
+
+  setting-row {
     display: flex;
     align-items: baseline;
     margin: 10px 0;
   }
-  
+
   setting-name {
     width: 200px;
     text-align: right;
     margin-right: 25px;
     font-weight: 700;
   }
-  
-  /* options {
-  } */
-  
+
   .main-party {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     height: 65px;
   }
-  
+
   .main-party select {
     width: 100px;
   }
-  
+
   .team-availability {
     display: flex;
     flex-wrap: wrap;
     width: 180px;
   }
-  
+
   .team-availability label {
     width: 80px;
     font-weight: 500;
   }
-  
-  note {
+
+  note-text {
     font-size: 14px;
     font-weight: 700;
     margin-top: 20px;
