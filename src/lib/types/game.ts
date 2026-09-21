@@ -1,5 +1,29 @@
+export type ProcessStatus = 'searching' | 'connected';
+
 export type MagicSlot = [spellId: number, quantity: number];
-export type GameValue = boolean | number | string | number[] | MagicSlot[] | null;
+export type ItemSlot = [itemId: number, quantity: number];
+
+export interface GuardianRosterEntry {
+  unlocked: boolean;
+  learningSkillId: number;
+}
+
+export interface GuardianStatsEntry {
+  currentHealth: number;
+  maxHealth: number;
+  exp: number;
+}
+
+export type GameValue =
+  | boolean
+  | number
+  | string
+  | number[]
+  | MagicSlot[]
+  | ItemSlot[]
+  | GuardianRosterEntry[]
+  | GuardianStatsEntry[]
+  | null;
 
 export interface Character {
   id: number;
@@ -28,6 +52,22 @@ export interface TeamMember extends Character {
   maxHealthModifier2?: number;
 }
 
+export interface GuardianForce {
+  id: number;
+  name: string;
+  unlocked: boolean;
+  learningSkillId: number;
+  currentHealth: number;
+  maxHealth: number;
+  exp: number;
+}
+
+export interface InventoryItem {
+  id: number;
+  name: string;
+  quantity: number;
+}
+
 export interface GameValueDelta {
   newVal: GameValue;
   prevVal: GameValue;
@@ -37,6 +77,6 @@ export type GameValueDeltas = Record<string, GameValueDelta>;
 
 export interface Ff8Api {
   onGameValuesUpdated(callback: (deltas: GameValueDeltas) => void): () => void;
-  onProcessStatusChanged(callback: (status: 'searching' | 'connected') => void): () => void;
+  onProcessStatusChanged(callback: (status: ProcessStatus) => void): () => void;
   requestSnapshot(): void;
 }

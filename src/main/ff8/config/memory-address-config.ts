@@ -13,6 +13,50 @@ const decodeText = (values: MemoryValue[]): string => {
     .join('');
 };
 
+// Party inventory: 198 slots of (item id, quantity) at 0x01CFE79C (module
+// offset 18FE79C from ff8-speedruns/ff8-memory). Empty slots are dropped so the
+// renderer only ever sees items the party is actually holding.
+const decodeInventory = (values: MemoryValue[]): MemoryValue => {
+  const bytes = (values[0] ?? []) as number[];
+  const inventory: number[][] = [];
+  for (let index = 0; index + 1 < bytes.length; index += 2) {
+    const itemId = bytes[index] ?? 0;
+    const quantity = bytes[index + 1] ?? 0;
+    if (itemId > 0 && quantity > 0) inventory.push([itemId, quantity]);
+  }
+  return inventory;
+};
+
+// Guardian Force roster: 16 entries, stride 0x44, from 0x01CFDCB9 (18FDCB9).
+// +0x00 is the unlocked flag and +0x2F the ability currently selected to learn.
+// Returned positionally; the renderer owns the GF ordering and names.
+const GUARDIAN_COUNT = 16;
+const GUARDIAN_ROSTER_STRIDE = 0x44;
+const GUARDIAN_ROSTER_SIZE = (GUARDIAN_COUNT - 1) * GUARDIAN_ROSTER_STRIDE + 0x30;
+const decodeGuardianRoster = (values: MemoryValue[]): MemoryValue => {
+  const bytes = (values[0] ?? []) as number[];
+  if (bytes.length < GUARDIAN_ROSTER_SIZE) return [];
+  return Array.from({ length: GUARDIAN_COUNT }, (_, index) => ({
+    unlocked: (bytes[index * GUARDIAN_ROSTER_STRIDE] ?? 0) > 0,
+    learningSkillId: bytes[index * GUARDIAN_ROSTER_STRIDE + 0x2f] ?? 0
+  }));
+};
+
+// Guardian Force stats: 16 entries, stride 0xC, from 0x01CFF618 (18FF618):
+// current HP (short), max HP (short), EXP (int), then 4 bytes of padding.
+const GUARDIAN_STATS_STRIDE = 0xc;
+const decodeGuardianStats = (values: MemoryValue[]): MemoryValue => {
+  const buffer = Buffer.from((values[0] ?? []) as number[]);
+  // The watcher calls this with `[]` as the previous value on the first delta,
+  // so an empty (or short) read must not be indexed into.
+  if (buffer.length < GUARDIAN_COUNT * GUARDIAN_STATS_STRIDE) return [];
+  return Array.from({ length: GUARDIAN_COUNT }, (_, index) => ({
+    currentHealth: buffer.readUInt16LE(index * GUARDIAN_STATS_STRIDE),
+    maxHealth: buffer.readUInt16LE(index * GUARDIAN_STATS_STRIDE + 2),
+    exp: buffer.readUInt32LE(index * GUARDIAN_STATS_STRIDE + 4)
+  }));
+};
+
 const memoryAddressConfig: MemoryAddressConfig = {
   // mode_StateGlobal holds the game mode the module handler should run next and
   // the battle director keeps it at 3 (IN_BATTLE) for the whole fight: from the
@@ -1807,6 +1851,35 @@ const memoryAddressConfig: MemoryAddressConfig = {
       size: null,
     }],
     valueTransformerOut: vals => vals[0] > 0,
+  },
+  // Party inventory and Guardian Force state. These live in the field/menu
+  // savemap, so they are readable without an active battle.
+  itemsInventory: {
+    locations: [{
+      address: 0x01CFE79C,
+      offsets: [],
+      type: 'bytes',
+      size: 198 * 2,
+    }],
+    valueTransformerOut: decodeInventory,
+  },
+  guardianRoster: {
+    locations: [{
+      address: 0x01CFDCB9,
+      offsets: [],
+      type: 'bytes',
+      size: GUARDIAN_ROSTER_SIZE,
+    }],
+    valueTransformerOut: decodeGuardianRoster,
+  },
+  guardianStats: {
+    locations: [{
+      address: 0x01CFF618,
+      offsets: [],
+      type: 'bytes',
+      size: GUARDIAN_COUNT * GUARDIAN_STATS_STRIDE,
+    }],
+    valueTransformerOut: decodeGuardianStats,
   },
 };
 

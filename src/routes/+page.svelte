@@ -1,111 +1,75 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { gameState } from '$lib/game-state.svelte';
+  import { portraitUrl } from '$lib/portraits';
+  import type { TeamMember } from '$lib/types/game';
 
-  import PartyViewComponent from '../components/PartyViewComponent/PartyViewComponent.svelte';
-  import type { BattleCharacter, GameValue, GameValueDeltas, TeamMember } from '$lib/types/game';
+  const characters = $derived(gameState.teamMembers);
 
-  let processStatus = $state<'searching' | 'connected'>('searching');
-  let battleStarted = $state(false);
-
-  const teamMembers = $state<TeamMember[]>([
-    { id: 0, name: 'Squall' },
-    { id: 1, name: 'Zell' },
-    { id: 2, name: 'Irvine' },
-    { id: 3, name: 'Quistis' },
-    { id: 4, name: 'Rinoa' },
-    { id: 5, name: 'Selphie' },
-    { id: 6, name: 'Seifer' },
-    { id: 7, name: 'Edea' }
-  ]);
-  const enemies = $state<BattleCharacter[]>(
-    Array.from({ length: 4 }, (_, index) => ({ id: index + 1, name: `Enemy ${index + 1}` }))
-  );
-  const partyMembers = $state<BattleCharacter[]>(
-    Array.from({ length: 3 }, (_, index) => ({ id: index + 1, name: `Party ${index + 1}` }))
+  // Battle-party slots persist outside a fight, so the active party can be
+  // highlighted here even on the field.
+  const partyIds = $derived(
+    new Set(gameState.visibleParty.map((member) => member.teamMemberId))
   );
 
-  // An enemy slot counts as occupied once the battle setup has written its max
-  // HP, and that value stays set after the enemy dies. It is therefore gated on
-  // the battle director actually being in a battle, or the left column would
-  // still be listing the last fight's opponents out on the field.
-  const visibleEnemies = $derived(
-    battleStarted ? enemies.filter((enemy) => (enemy.maxHealth ?? 0) > 0) : []
-  );
-
-  // A party slot is occupied when the engine has assigned it a team member; 255
-  // is the empty-slot marker. Those slots persist after a fight, which is what
-  // lets the same rows be shown both in battle and on the field. Level and EXP
-  // live on the team member rather than on the battle slot, so they are joined
-  // in by team member id.
-  const visibleParty = $derived(
-    partyMembers
-      .filter((member) => member.teamMemberId !== undefined && member.teamMemberId !== 255)
-      .map((member) => {
-        const teamMember = teamMembers.find((candidate) => candidate.id === member.teamMemberId);
-        return {
-          ...member,
-          displayName: teamMember?.displayName ?? member.name,
-          currentLevel: teamMember?.currentLevel,
-          currentExp: teamMember?.currentExp
-        };
-      })
-  );
-
-  function assignValue(target: object | undefined, propertyName: string, value: GameValue): void {
-    if (target) (target as Record<string, GameValue>)[propertyName] = value;
+  function magicCount(member: TeamMember): number {
+    return member.magic?.filter(([, quantity]) => (quantity ?? 0) > 0).length ?? 0;
   }
-
-  function receiveTeamMemberValue(propertyName: string, value: GameValue): void {
-    const [attributeName, teamMemberName] = propertyName.split('TeamMember');
-    assignValue(teamMembers.find((member) => member.name === teamMemberName), attributeName!, value);
-  }
-
-  function receiveEnemyValue(propertyName: string, value: GameValue): void {
-    const [attributeName, rawId] = propertyName.split('Enemy');
-    assignValue(enemies.find((enemy) => enemy.id === Number(rawId)), attributeName!, value);
-  }
-
-  function receivePartyMemberValue(propertyName: string, value: GameValue): void {
-    const [attributeName, rawId] = propertyName.split('PartyMember');
-    assignValue(partyMembers.find((member) => member.id === Number(rawId)), attributeName!, value);
-  }
-
-  function applyDeltas(deltas: GameValueDeltas): void {
-    for (const [propertyName, { newVal }] of Object.entries(deltas)) {
-      if (propertyName.includes('Enemy')) receiveEnemyValue(propertyName, newVal);
-      else if (propertyName.includes('PartyMember')) receivePartyMemberValue(propertyName, newVal);
-      else if (propertyName.includes('TeamMember')) receiveTeamMemberValue(propertyName, newVal);
-      else if (propertyName === 'battleStarted') battleStarted = Boolean(newVal);
-    }
-  }
-
-  onMount(() => {
-    if (!window.ff8) return;
-    const removeDeltasListener = window.ff8.onGameValuesUpdated(applyDeltas);
-    const removeStatusListener = window.ff8.onProcessStatusChanged((status) => {
-      processStatus = status;
-      if (status === 'searching') battleStarted = false;
-    });
-    // The watcher only pushes changes, so a renderer that mounts after it has
-    // already connected has to ask for the current state explicitly.
-    window.ff8.requestSnapshot();
-    return () => {
-      removeDeltasListener();
-      removeStatusListener();
-    };
-  });
 </script>
 
-<div class="flex h-screen w-full flex-col overflow-hidden bg-ff-field font-ff tracking-wider text-ff-border uppercase">
-  {#if processStatus === 'searching'}
-    <div class="flex flex-1 items-center justify-center p-6 text-xs">
-      Looking for process FF8_EN.exe
+<div class="flex min-h-0 flex-1 flex-col gap-2 p-3">
+  <div class="flex items-baseline justify-between text-[10px] text-ff-label">
+    <span>Party roster</span>
+    <span>{characters.filter((member) => member.isAvailable).length} / {characters.length} available</span>
+  </div>
+
+  <div class="min-h-0 flex-1 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:var(--color-ff-border)_var(--color-ff-window-dark)]">
+    <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+      {#each characters as member (member.id)}
+        {@const name = member.displayName || member.name}
+        {@const portrait = portraitUrl(name)}
+        {@const inParty = partyIds.has(member.id)}
+        <div class="flex items-center gap-2 border-2 border-ff-border bg-ff-window p-2">
+          {#if portrait}
+            <img src={portrait} alt="" class="h-12 w-auto shrink-0 border border-ff-border/60" />
+          {/if}
+          <div class="min-w-0 flex-1">
+            <div class="flex items-baseline justify-between gap-2">
+              <span class="truncate text-sm font-bold">{name}</span>
+              <span class="shrink-0 text-[10px] text-ff-label">LV {member.currentLevel ?? 1}</span>
+            </div>
+
+            <dl class="mt-1 grid grid-cols-3 gap-x-3 text-[10px]">
+              <div class="flex justify-between gap-1">
+                <dt class="text-ff-label">HP</dt>
+                <dd class="tabular-nums">{member.currentHealth ?? 0}</dd>
+              </div>
+              <div class="flex justify-between gap-1">
+                <dt class="text-ff-label">EXP</dt>
+                <dd class="tabular-nums">{member.currentExp ?? 0}</dd>
+              </div>
+              <div class="flex justify-between gap-1">
+                <dt class="text-ff-label">Magic</dt>
+                <dd class="tabular-nums">{magicCount(member)}</dd>
+              </div>
+            </dl>
+
+            <div class="mt-1 flex flex-wrap gap-1 text-[9px] leading-tight">
+              <span
+                class="border px-1"
+                class:border-ff-good={member.isAvailable}
+                class:text-ff-good={member.isAvailable}
+                class:border-ff-label={!member.isAvailable}
+                class:text-ff-label={!member.isAvailable}
+              >
+                {member.isAvailable ? 'Available' : 'Not yet joined'}
+              </span>
+              {#if inParty}
+                <span class="border border-ff-warn px-1 text-ff-warn">In party</span>
+              {/if}
+            </div>
+          </div>
+        </div>
+      {/each}
     </div>
-  {:else}
-    <PartyViewComponent
-      enemies={visibleEnemies}
-      party={visibleParty}
-      {battleStarted}
-    />
-  {/if}
+  </div>
 </div>
