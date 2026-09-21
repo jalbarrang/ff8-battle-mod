@@ -1,0 +1,66 @@
+diff --git a/dist/index.js b/dist/index.js
+index 699e86f97fcf6f1aa3998cc3061ac8abc6a74272..2d9a1fbcf213a7ca9502841a4f43dd80b7ea04fb 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -3930,12 +3930,35 @@ function keyNodeOf(object, entry) {
+ 	for (const prop of object.properties) if (prop.type === "Property" && prop.value === entry.value) return prop.key;
+ 	return object;
+ }
++function collectSvelteValue(parts, context, options = {}) {
++	const merged = {
++		contextualStrings: [],
++		vocabularyStrings: [],
++		unresolved: []
++	};
++	for (const part of parts) {
++		if (part?.type !== "SvelteLiteral" || typeof part.value !== "string" || !part.value.trim()) continue;
++		const collected = collectClassStrings({
++			type: "Literal",
++			value: part.value,
++			raw: JSON.stringify(part.value),
++			range: part.range,
++			loc: part.loc,
++			parent: part.parent
++		}, context, options);
++		merged.contextualStrings.push(...collected.contextualStrings);
++		merged.vocabularyStrings.push(...collected.vocabularyStrings);
++		merged.unresolved.push(...collected.unresolved);
++	}
++	return merged;
++}
+ function collectFromValue(value, context, options = {}) {
+ 	if (!value) return {
+ 		contextualStrings: [],
+ 		vocabularyStrings: [],
+ 		unresolved: []
+ 	};
++	if (Array.isArray(value) && value.some((part) => part?.type === "SvelteLiteral")) return collectSvelteValue(value, context, options);
+ 	const object = resolveObject(value, context, /* @__PURE__ */ new Set());
+ 	if (object) return collectClassStrings(object, context, {
+ 		...options,
+@@ -4095,6 +4118,13 @@ function classSiteVisitors(context, options, onSite) {
+ 		const opening = node?.parent;
+ 		return opening?.type === "JSXOpeningElement" ? opening.parent : null;
+ 	};
++	const svelteAttributeSites = (node, name) => {
++		let list = sites.get(node);
++		if (list) return list;
++		list = [siteFor(node, node.value, name, elementOf(node), null)];
++		sites.set(node, list);
++		return list;
++	};
+ 	const attributeSites = (node) => {
+ 		let list = sites.get(node);
+ 		if (list) return list;
+@@ -4134,6 +4164,11 @@ function classSiteVisitors(context, options, onSite) {
+ 			if (!isClassAttribute(attributeNameOf(node))) return;
+ 			for (const site of attributeSites(node)) emit(site);
+ 		},
++		SvelteAttribute(node) {
++			const name = node.key?.type === "SvelteName" ? node.key.name : null;
++			if (typeof name !== "string" || !isClassAttribute(name)) return;
++			for (const site of svelteAttributeSites(node, name)) emit(site);
++		},
+ 		JSXSpreadAttribute(node) {
+ 			for (const site of spreadSites(node)) emit(site);
+ 		},

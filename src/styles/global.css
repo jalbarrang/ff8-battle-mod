@@ -1,17 +1,223 @@
 @import 'tailwindcss';
 
-/* Final Fantasy (NES) palette: black field, blue bordered windows, white text.
-   Accent colours are the NES palette entries used for HP/odds emphasis. */
-@theme {
-  --font-ff:
-    ui-monospace, 'Cascadia Mono', 'Segoe UI Mono', Consolas, 'Courier New', monospace;
+/* ---------------------------------------------------------------------------
+   FFVIII menu material.
 
+   Provenance: the chrome is transcribed from Final Fantasy VIII's menu, read
+   from the FFVIII menu recreation `eadpearce/ff8-ui` (SCSS: a grey panel
+   gradient, a two-colour bevel border, a black field, black corner tabs naming
+   each panel, white ink carrying a dark bloom) and from FFVIII menu captures
+   (main menu, Junction, GF). The values sampled from those sources, and the two
+   departures below, are recorded in DESIGN.md.
+
+   Two deliberate departures from the source, both recorded in DESIGN.md:
+
+   1. The metal is darkened and the gradient narrowed until white ink clears
+      4.5:1 across the whole sweep. FFVIII's own mid-grey panels do not.
+   2. Signal colours never set text. Saturated green/amber/red cannot reach
+      4.5:1 as 10px text on mid metal, so they fill bars and lamps instead and
+      the value beside them stays white.
+--------------------------------------------------------------------------- */
+
+@font-face {
+  font-family: 'FF8 Condensed';
+  /* Served from `public/` and referenced document-relative, the same way the
+     portraits are: the production bundle inlines this stylesheet into the HTML,
+     so a Vite-hashed asset URL would not resolve under `file://`. */
+  src: url('./fonts/roboto-condensed.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: block;
+}
+
+@theme {
+  /* FFVIII's menu face is a condensed grotesque; this is the face the FFVIII
+     menu recreation used, self-hosted so the app never reaches the network. */
+  --font-ff:
+    'FF8 Condensed', Bahnschrift, 'Arial Narrow', 'Segoe UI', system-ui, sans-serif;
+
+  /* The FF8 type scale, as tokens: names and figures at 16, navigation at 13,
+     the label tier at 12, the uppercase corner tabs at 11. The label tier is the
+     floor (see the Twelve Floor Rule in DESIGN.md), so a hand-written size is a
+     lint finding rather than a style choice. */
+  --text-name: 16px;
+  --text-nav: 13px;
+  --text-label: 12px;
+  --text-tab: 11px;
+
+  /* Below this width the connection words drop and the lamp carries the state
+     alone, so the four tabs never clip. */
+  --breakpoint-status: 431px;
+
+  /* Field and metal: four tones of one grey family. */
   --color-ff-field: #000000;
-  --color-ff-window: #0000a8;
-  --color-ff-window-dark: #00005c;
-  --color-ff-border: #ffffff;
-  --color-ff-label: #a8b8f8;
-  --color-ff-good: #00a800;
-  --color-ff-warn: #f8b800;
-  --color-ff-bad: #f83800;
+  --color-ff-plate-hi: #5e5e5e;
+  --color-ff-plate-lo: #3d3d3d;
+  --color-ff-well: #232323;
+
+  /* The two-colour bevel. Light edge faces the light, dark edge the dark. */
+  --color-ff-edge-hi: #949494;
+  --color-ff-edge-lo: #1c1c1c;
+
+  /* Ink: one white, one barely-relieved dim for labels. */
+  --color-ff-ink: #ffffff;
+  --color-ff-ink-dim: #e2e2e2;
+
+  /* State signals. Graphics only, never text. */
+  --color-ff-good: #35c948;
+  --color-ff-warn: #f5b800;
+  --color-ff-bad: #f04a2a;
+
+  /* The world's only shadow: hard, offset, zero blur. */
+  --shadow-plate: 5px 5px 0 #000;
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html,
+  body {
+    height: 100%;
+    background: var(--color-ff-field);
+  }
+
+  body {
+    font-family: var(--font-ff);
+    color: var(--color-ff-ink);
+    /* FFVIII sets every menu glyph in a dark bloom. */
+    text-shadow: 0 0 2px rgb(0 0 0 / 0.9);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Browser surfaces carry the design too. */
+  ::selection {
+    background: var(--color-ff-warn);
+    color: #000;
+    text-shadow: none;
+  }
+
+  input,
+  textarea {
+    caret-color: var(--color-ff-warn);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ff-warn);
+    outline-offset: 2px;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-ff-edge-hi) var(--color-ff-well);
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-ff-well);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-ff-plate-hi);
+    border: 2px solid var(--color-ff-well);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-ff-edge-hi);
+  }
+}
+
+@layer components {
+  /* A raised metal plate: the primary surface of this world. */
+  .plate {
+    position: relative;
+    color: var(--color-ff-ink);
+    background-image: linear-gradient(
+      135deg,
+      var(--color-ff-plate-hi),
+      var(--color-ff-plate-lo)
+    );
+    border: 2px solid;
+    border-top-color: var(--color-ff-edge-hi);
+    border-left-color: var(--color-ff-edge-hi);
+    border-right-color: var(--color-ff-edge-lo);
+    border-bottom-color: var(--color-ff-edge-lo);
+    box-shadow: var(--shadow-plate);
+  }
+
+  /* A recess: troughs, fields, list beds. The bevel inverts. */
+  .well {
+    background: var(--color-ff-well);
+    border: 2px solid;
+    border-top-color: var(--color-ff-edge-lo);
+    border-left-color: var(--color-ff-edge-lo);
+    border-right-color: var(--color-ff-edge-hi);
+    border-bottom-color: var(--color-ff-edge-hi);
+  }
+
+  /* A horizontal chrome strip: the nav bar and every section header. Sits on
+     its own dark edge rather than casting an offset. */
+  .bar {
+    background-image: linear-gradient(
+      180deg,
+      var(--color-ff-plate-hi),
+      var(--color-ff-plate-lo)
+    );
+    border-bottom: 2px solid var(--color-ff-edge-lo);
+  }
+
+  /* The small black tab that names a panel, straddling its top edge. */
+  .tab-label {
+    position: absolute;
+    top: -8px;
+    left: 8px;
+    z-index: 1;
+    padding: 0 4px;
+    background: var(--color-ff-field);
+    color: var(--color-ff-ink);
+    font-size: var(--text-tab);
+    line-height: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /* Nav tab. Inactive is the bar itself; active is lit as a raised plate. */
+  .tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-right: 2px solid var(--color-ff-edge-lo);
+    color: var(--color-ff-ink);
+    background: transparent;
+    transition: background-color 120ms linear;
+  }
+
+  .tab:hover {
+    background-color: color-mix(in srgb, var(--color-ff-plate-hi) 60%, transparent);
+  }
+
+  .tab-active {
+    background-image: linear-gradient(
+      135deg,
+      var(--color-ff-plate-hi),
+      var(--color-ff-plate-lo)
+    );
+    /* The lit tab carries the world's one accent, as an inset edge. */
+    box-shadow: inset 0 -3px 0 var(--color-ff-warn);
+  }
+
+  /* A state lamp. Never the only signal: it always sits beside its value. */
+  .lamp {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 6px;
+    height: 6px;
+  }
 }

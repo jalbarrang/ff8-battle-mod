@@ -23,85 +23,80 @@
   }
 </script>
 
-{#snippet memberCard(member: TeamMember)}
+<!-- The world has two surfaces: a raised plate that holds live state, and a
+     recess for everything standing by. That, not colour, is how the active
+     party is separated from the rest of the roster. -->
+{#snippet memberPlate(member: TeamMember, active: boolean)}
   {@const name = member.displayName || member.name}
   {@const portrait = portraitUrl(name)}
-  <div class="flex items-center gap-2 border-2 border-ff-border bg-ff-window p-2">
-    {#if portrait}
-      <img src={portrait} alt="" class="h-12 w-auto shrink-0 border border-ff-border/60" />
+  <div class={active ? 'plate p-2' : 'well p-2'}>
+    {#if active}
+      <span class="tab-label">Status</span>
     {/if}
-    <div class="min-w-0 flex-1">
-      <div class="flex items-baseline justify-between gap-2">
-        <span class="truncate text-sm font-bold">{name}</span>
-        <span class="shrink-0 text-[10px] text-ff-label">LV {member.currentLevel ?? 1}</span>
-      </div>
+    <div class="flex items-center gap-2">
+      {#if portrait}
+        <img src={portrait} alt="" class="h-12 w-auto shrink-0 border border-ff-edge-lo" />
+      {/if}
+      <div class="min-w-0 flex-1">
+        <div class="flex items-baseline justify-between gap-2">
+          <span class="truncate text-name font-bold">{name}</span>
+          <span class="shrink-0 text-label text-ff-ink-dim">Lv {member.currentLevel ?? 1}</span>
+        </div>
 
-      <dl class="mt-1 grid grid-cols-3 gap-x-3 text-[10px]">
-        <div class="flex justify-between gap-1">
-          <dt class="text-ff-label">HP</dt>
-          <dd class="tabular-nums">{member.currentHealth ?? 0}</dd>
-        </div>
-        <div class="flex justify-between gap-1">
-          <dt class="text-ff-label">EXP</dt>
-          <dd class="tabular-nums">{member.currentExp ?? 0}</dd>
-        </div>
-        <div class="flex justify-between gap-1">
-          <dt class="text-ff-label">Magic</dt>
-          <dd class="tabular-nums">{magicCount(member)}</dd>
-        </div>
-      </dl>
+        <dl class="mt-1 flex flex-wrap items-baseline gap-x-4 gap-y-0.5 text-label">
+          <div class="flex items-baseline gap-1.5">
+            <dt class="text-ff-ink-dim">HP</dt>
+            <dd class="tabular-nums">{member.currentHealth ?? 0}</dd>
+          </div>
+          <div class="flex items-baseline gap-1.5">
+            <dt class="text-ff-ink-dim">EXP</dt>
+            <dd class="tabular-nums">{member.currentExp ?? 0}</dd>
+          </div>
+          <div class="flex items-baseline gap-1.5">
+            <dt class="text-ff-ink-dim">Magic</dt>
+            <dd class="tabular-nums">{magicCount(member)}</dd>
+          </div>
+        </dl>
+      </div>
     </div>
   </div>
 {/snippet}
 
-<div class="flex min-h-0 flex-1 flex-col gap-2 p-3">
-  <div class="flex items-baseline justify-between text-[10px] text-ff-label">
+<div class="flex min-h-0 flex-1 flex-col gap-3 p-3">
+  <div class="bar flex shrink-0 items-baseline justify-between px-2 py-1 text-label">
     <span>Party roster</span>
-    <span>{joinedMembers.length} / {characters.length} joined</span>
+    <span class="tabular-nums text-ff-ink-dim">
+      {joinedMembers.length} / {characters.length} joined
+    </span>
   </div>
 
-  <div
-    class="min-h-0 flex-1 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:var(--color-ff-border)_var(--color-ff-window-dark)]"
-  >
+  <!-- The plate offset needs room inside the scroller, or it gets clipped. -->
+  <div class="min-h-0 flex-1 overflow-y-auto pb-2 pr-2">
     <section class="flex flex-col gap-2" aria-labelledby="active-party-heading">
-      <h2
-        id="active-party-heading"
-        class="flex items-center gap-1.5 text-[10px] text-ff-warn"
-      >
-        <span class="inline-block h-1.5 w-1.5 bg-ff-warn"></span>
-        Active party
-      </h2>
+      <h2 id="active-party-heading" class="text-label text-ff-ink-dim">Active party</h2>
       {#if activeMembers.length > 0}
-        <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <div class="grid grid-cols-1 gap-3">
           {#each activeMembers as member (member.id)}
-            {@render memberCard(member)}
+            {@render memberPlate(member, true)}
           {/each}
         </div>
       {:else}
-        <p class="text-[10px] text-ff-label">No active party members.</p>
+        <p class="text-label text-ff-ink-dim">
+          No one is in the battle party. Slots fill when a fight starts.
+        </p>
       {/if}
     </section>
 
-    <div
-      class="my-3 flex items-center gap-2"
-      role="separator"
-      aria-label="Inactive party members"
-    >
-      <span class="h-0.5 flex-1 bg-ff-border/60"></span>
-      <span class="shrink-0 text-[10px] text-ff-label">Inactive</span>
-      <span class="h-0.5 flex-1 bg-ff-border/60"></span>
-    </div>
-
-    <section class="flex flex-col gap-2" aria-labelledby="inactive-party-heading">
-      <h2 id="inactive-party-heading" class="text-[10px] text-ff-label">Inactive party</h2>
+    <section class="mt-4 flex flex-col gap-2" aria-labelledby="inactive-party-heading">
+      <h2 id="inactive-party-heading" class="text-label text-ff-ink-dim">Inactive party</h2>
       {#if inactiveMembers.length > 0}
-        <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <div class="grid grid-cols-1 gap-3">
           {#each inactiveMembers as member (member.id)}
-            {@render memberCard(member)}
+            {@render memberPlate(member, false)}
           {/each}
         </div>
       {:else}
-        <p class="text-[10px] text-ff-label">No inactive party members.</p>
+        <p class="text-label text-ff-ink-dim">Everyone who has joined is in the party.</p>
       {/if}
     </section>
   </div>

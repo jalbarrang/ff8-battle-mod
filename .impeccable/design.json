@@ -1,0 +1,401 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-21T17:20:00Z",
+  "title": "Design System: FF8 Battle HP",
+  "extensions": {
+    "colorMeta": {
+      "field": {
+        "role": "neutral",
+        "displayName": "Field Black",
+        "canonical": "#000000",
+        "tonalRamp": [
+          "oklch(12% 0 0)",
+          "oklch(22% 0 0)",
+          "oklch(32% 0 0)",
+          "oklch(43% 0 0)",
+          "oklch(54% 0 0)",
+          "oklch(66% 0 0)",
+          "oklch(79% 0 0)",
+          "oklch(94% 0 0)"
+        ]
+      },
+      "plate-hi": {
+        "role": "primary",
+        "displayName": "Plate Light",
+        "canonical": "oklch(48% 0 0)",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(25% 0 0)",
+          "oklch(36% 0 0)",
+          "oklch(48% 0 0)",
+          "oklch(58% 0 0)",
+          "oklch(68% 0 0)",
+          "oklch(80% 0 0)",
+          "oklch(93% 0 0)"
+        ]
+      },
+      "plate-lo": {
+        "role": "primary",
+        "displayName": "Plate Dark",
+        "canonical": "oklch(36% 0 0)",
+        "tonalRamp": [
+          "oklch(12% 0 0)",
+          "oklch(20% 0 0)",
+          "oklch(28% 0 0)",
+          "oklch(36% 0 0)",
+          "oklch(46% 0 0)",
+          "oklch(58% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(90% 0 0)"
+        ]
+      },
+      "well": {
+        "role": "primary",
+        "displayName": "Recess Black",
+        "canonical": "oklch(26% 0 0)",
+        "tonalRamp": [
+          "oklch(10% 0 0)",
+          "oklch(16% 0 0)",
+          "oklch(21% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(36% 0 0)",
+          "oklch(50% 0 0)",
+          "oklch(68% 0 0)",
+          "oklch(88% 0 0)"
+        ]
+      },
+      "edge-hi": {
+        "role": "neutral",
+        "displayName": "Bevel Light",
+        "canonical": "oklch(67% 0 0)",
+        "tonalRamp": [
+          "oklch(18% 0 0)",
+          "oklch(28% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(48% 0 0)",
+          "oklch(57% 0 0)",
+          "oklch(67% 0 0)",
+          "oklch(80% 0 0)",
+          "oklch(94% 0 0)"
+        ]
+      },
+      "edge-lo": {
+        "role": "neutral",
+        "displayName": "Bevel Dark",
+        "canonical": "oklch(22% 0 0)",
+        "tonalRamp": [
+          "oklch(9% 0 0)",
+          "oklch(14% 0 0)",
+          "oklch(18% 0 0)",
+          "oklch(22% 0 0)",
+          "oklch(34% 0 0)",
+          "oklch(48% 0 0)",
+          "oklch(66% 0 0)",
+          "oklch(88% 0 0)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink White",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "oklch(97% 0 0)",
+          "oklch(89% 0 0)",
+          "oklch(80% 0 0)",
+          "oklch(70% 0 0)",
+          "oklch(59% 0 0)",
+          "oklch(47% 0 0)",
+          "oklch(34% 0 0)",
+          "oklch(19% 0 0)"
+        ]
+      },
+      "ink-dim": {
+        "role": "neutral",
+        "displayName": "Dim Ink",
+        "canonical": "#e2e2e2",
+        "tonalRamp": [
+          "oklch(20% 0 0)",
+          "oklch(31% 0 0)",
+          "oklch(43% 0 0)",
+          "oklch(55% 0 0)",
+          "oklch(67% 0 0)",
+          "oklch(79% 0 0)",
+          "oklch(91% 0 0)",
+          "oklch(97% 0 0)"
+        ]
+      },
+      "signal-good": {
+        "role": "tertiary",
+        "displayName": "Signal Green",
+        "canonical": "oklch(75% 0.19 143)",
+        "tonalRamp": [
+          "oklch(22% 0.07 143)",
+          "oklch(34% 0.11 143)",
+          "oklch(46% 0.14 143)",
+          "oklch(58% 0.17 143)",
+          "oklch(68% 0.19 143)",
+          "oklch(75% 0.19 143)",
+          "oklch(85% 0.14 143)",
+          "oklch(94% 0.06 143)"
+        ]
+      },
+      "signal-warn": {
+        "role": "tertiary",
+        "displayName": "Signal Amber",
+        "canonical": "oklch(81% 0.17 80)",
+        "tonalRamp": [
+          "oklch(24% 0.06 80)",
+          "oklch(36% 0.09 80)",
+          "oklch(48% 0.12 80)",
+          "oklch(60% 0.15 80)",
+          "oklch(71% 0.17 80)",
+          "oklch(81% 0.17 80)",
+          "oklch(89% 0.12 80)",
+          "oklch(96% 0.05 80)"
+        ]
+      },
+      "signal-bad": {
+        "role": "tertiary",
+        "displayName": "Signal Red",
+        "canonical": "oklch(62% 0.20 34)",
+        "tonalRamp": [
+          "oklch(20% 0.07 34)",
+          "oklch(31% 0.12 34)",
+          "oklch(42% 0.16 34)",
+          "oklch(52% 0.19 34)",
+          "oklch(62% 0.20 34)",
+          "oklch(72% 0.18 34)",
+          "oklch(83% 0.13 34)",
+          "oklch(94% 0.06 34)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "name": {
+        "displayName": "Name",
+        "purpose": "Character and Guardian names, and the current health figure in a battle row; the only bold tier."
+      },
+      "figure": {
+        "displayName": "Figure",
+        "purpose": "Health values, tabular, at name scale because a glance must catch both."
+      },
+      "nav": {
+        "displayName": "Nav",
+        "purpose": "The four navigation tab labels."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Workhorse: field labels, in-card figures, odds, EXP, section headers, counts, item rows, status text. The 12px floor."
+      },
+      "tab": {
+        "displayName": "Corner Tab",
+        "purpose": "The 11px uppercase black tabs that name plates. The only uppercase type."
+      }
+    },
+    "shadows": [
+      {
+        "name": "plate",
+        "value": "5px 5px 0 #000",
+        "purpose": "The system's only shadow: a hard zero-blur offset under every raised plate, so plates read as stacked on the black field. Never blurred, never varied, never a second step."
+      }
+    ],
+    "motion": [
+      {
+        "name": "lamp-pulse",
+        "value": "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "purpose": "The battle-in-progress lamp only. Every other movement on screen is live data changing, not decoration."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "status-label-floor",
+        "value": "430px",
+        "purpose": "Below this width the connection words drop and the lamp carries the state, so the navigation never clips."
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Plate",
+      "kind": "card",
+      "description": "The primary surface: a raised metal plate carrying live state, with a corner tab straddling its top edge.",
+      "html": "<div class=\"ds-plate\"><span class=\"ds-corner-tab\">Status</span><p class=\"ds-plate-body\">Squall — HP 2446 / 3129</p></div>",
+      "css": ".ds-plate { position: relative; padding: 8px; color: var(--color-ff-ink); background-image: linear-gradient(135deg, var(--color-ff-plate-hi), var(--color-ff-plate-lo)); border: 2px solid; border-top-color: var(--color-ff-edge-hi); border-left-color: var(--color-ff-edge-hi); border-right-color: var(--color-ff-edge-lo); border-bottom-color: var(--color-ff-edge-lo); box-shadow: var(--shadow-plate); font-family: ui-condensed, Bahnschrift, 'Arial Narrow', system-ui, sans-serif; } .ds-plate-body { margin: 0; font-size: 12px; line-height: 16px; }"
+    },
+    {
+      "name": "Corner Tab",
+      "kind": "custom",
+      "description": "The world's signature device: a small black tab straddling a plate's top edge, naming the panel. The only uppercase type.",
+      "html": "<span class=\"ds-corner-tab\">Enemy</span>",
+      "css": ".ds-corner-tab { position: absolute; top: -8px; left: 8px; z-index: 1; padding: 0 4px; background: var(--color-ff-field); color: var(--color-ff-ink); font-family: ui-condensed, Bahnschrift, 'Arial Narrow', system-ui, sans-serif; font-size: 11px; line-height: 14px; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }"
+    },
+    {
+      "name": "Navigation Tab",
+      "kind": "nav",
+      "refersTo": "nav-tab",
+      "description": "Mixed-case tab on the chrome strip, divided from its neighbours by a 2px dark rule.",
+      "html": "<a class=\"ds-nav-tab\" href=\"#/\">Party</a>",
+      "css": ".ds-nav-tab { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-right: 2px solid var(--color-ff-edge-lo); background: linear-gradient(180deg, var(--color-ff-plate-hi), var(--color-ff-plate-lo)); color: var(--color-ff-ink); font-family: ui-condensed, Bahnschrift, 'Arial Narrow', system-ui, sans-serif; font-size: 13px; line-height: 18px; text-decoration: none; cursor: pointer; text-shadow: 0 0 2px rgb(0 0 0 / 0.9); transition: background-color 120ms linear; } .ds-nav-tab:hover { background-color: color-mix(in srgb, var(--color-ff-plate-hi) 60%, transparent); } .ds-nav-tab:focus-visible { outline: 2px solid var(--color-ff-warn); outline-offset: -2px; }"
+    },
+    {
+      "name": "Navigation Tab (Active)",
+      "kind": "nav",
+      "refersTo": "nav-tab-active",
+      "description": "The lit tab: its own 135deg plate gradient plus a 3px amber inset edge. Selection stated twice, by surface and by the amber rule.",
+      "html": "<a class=\"ds-nav-tab-active\" href=\"#/battle\" aria-current=\"page\">Battle</a>",
+      "css": ".ds-nav-tab-active { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-right: 2px solid var(--color-ff-edge-lo); background-image: linear-gradient(135deg, var(--color-ff-plate-hi), var(--color-ff-plate-lo)); box-shadow: inset 0 -3px 0 var(--color-ff-warn); color: var(--color-ff-ink); font-family: ui-condensed, Bahnschrift, 'Arial Narrow', system-ui, sans-serif; font-size: 13px; line-height: 18px; text-decoration: none; cursor: pointer; text-shadow: 0 0 2px rgb(0 0 0 / 0.9); } .ds-nav-tab-active:focus-visible { outline: 2px solid var(--color-ff-warn); outline-offset: -2px; }"
+    },
+    {
+      "name": "Party Member Plate",
+      "kind": "card",
+      "refersTo": "party-card",
+      "description": "Portrait, 16px bold name, level, and a wrapping row of tight label/value pairs. A member standing by uses the same content on a well.",
+      "html": "<div class=\"ds-party-card\"><span class=\"ds-corner-tab\">Status</span><img class=\"ds-party-portrait\" src=\"images/Squall.png\" alt=\"\" /><div class=\"ds-party-body\"><div class=\"ds-party-top\"><span class=\"ds-party-name\">Squall</span><span class=\"ds-party-level\">Lv 8</span></div><dl class=\"ds-party-stats\"><div class=\"ds-stat\"><dt>HP</dt><dd>2446</dd></div><div class=\"ds-stat\"><dt>EXP</dt><dd>7812</dd></div><div class=\"ds-stat\"><dt>Magic</dt><dd>22</dd></div></dl></div></div>",
+      "css": ".ds-party-card { position: relative; display: flex; align-items: center; gap: 8px; padding: 8px; color: var(--color-ff-ink); background-image: linear-gradient(135deg, var(--color-ff-plate-hi), var(--color-ff-plate-lo)); border: 2px solid; border-top-color: var(--color-ff-edge-hi); border-left-color: var(--color-ff-edge-hi); border-right-color: var(--color-ff-edge-lo); border-bottom-color: var(--color-ff-edge-lo); box-shadow: var(--shadow-plate); font-family: ui-condensed, Bahnschrift, 'Arial Narrow', system-ui, sans-serif; text-shadow: 0 0 2px rgb(0 0 0 / 0.9); } .ds-party-card-well { background-image: none; background: var(--color-ff-well); box-shadow: none; border-top-color: var(--color-ff-edge-lo); border-left-color: var(--color-ff-edge-lo); border-right-color: var(--color-ff-edge-hi); border-bottom-color: var(--color-ff-edge-hi); } .ds-party-portrait { height: 48px; width: auto; flex-shrink: 0; border: 1px solid var(--color-ff-edge-lo); } .ds-party-body { min-width: 0; flex: 1 1 0%; } .ds-party-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; } .ds-party-name { font-size: 16px; line-height: 22px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .ds-party-level { flex-shrink: 0; font-size: 12px; line-height: 16px; color: var(--color-ff-ink-dim); } .ds-party-stats { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 16px; margin: 4px 0 0; font-size: 12px; line-height: 16px; } .ds-stat { display: flex; align-items: baseline; gap: 6px; } .ds-stat dt { color: var(--color-ff-ink-dim); } .ds-stat dd { margin: 0; font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Battle Character Row",
+      "kind": "custom",
+      "refersTo": "battle-row",
+      "description": "Portrait, bold name with inline level, and current/max health as one 16px tabular figure. Party rows mirror so the two sides face each other.",
+      "html": "<div class=\"ds-battle-row\"><img class=\"ds-battle-portrait\" src=\"images/Ifrit.png\" alt=\"\" /><div class=\"ds-battle-body\"><span class=\"ds-battle-ident\"><span class=\"ds-battle-name\">Ifrit</span><span class=\"ds-battle-level\">Lv 12</span></span><span class=\"ds-battle-health\">4218<span class=\"ds-battle-slash\">/</span>5000</span></div></div>",
+      "css": ".ds-battle-row { display: flex; flex-direction: column; gap: 4px; color: var(--color-ff-ink); font-family: ui-condensed, Bahnschrift, 'Arial Narrow', system-ui, sans-serif; text-shadow: 0 0 2px rgb(0 0 0 / 0.9); } .ds-battle-portrait { height: 40px; width: auto; flex-shrink: 0; border: 1px solid var(--color-ff-edge-lo); } .ds-battle-row > .ds-battle-portrait { margin-bottom: 2px; } .ds-battle-body { display: flex; align-items: center; gap: 8px; } .ds-battle-ident { display: flex; min-width: 0; flex: 1 1 0%; align-items: baseline; gap: 6px; } .ds-battle-name { font-size: 16px; line-height: 22px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .ds-battle-level { flex-shrink: 0; font-size: 12px; line-height: 1; color: var(--color-ff-ink-dim); } .ds-battle-health { flex-shrink: 0; font-size: 16px; line-height: 22px; font-variant-numeric: tabular-nums; } .ds-battle-slash { color: var(--color-ff-ink-dim); }"
+    },
+    {
+      "name": "ATB Meter",
+      "kind": "custom",
+      "description": "Fifteen discrete cells in a recessed track: amber while charging, green when the enemy is ready to act. A live role=meter.",
+      "html": "<div class=\"ds-atb\" role=\"meter\" aria-label=\"Ifrit ATB\" aria-valuenow=\"9\" aria-valuemin=\"0\" aria-valuemax=\"15\"><span class=\"ds-atb-cell ds-atb-on\"></span><span class=\"ds-atb-cell ds-atb-on\"></span><span class=\"ds-atb-cell ds-atb-on\"></span><span class=\"ds-atb-cell ds-atb-on\"></span><span class=\"ds-atb-cell ds-atb-on\"></span><span class=\"ds-atb-cell ds-atb-on\"></span><span class=\"ds-atb-cell ds-atb-on\"></span><span class=\"ds-atb-cell ds-atb-on\"></span><span class=\"ds-atb-cell ds-atb-on\"></span><span class=\"ds-atb-cell\"></span><span class=\"ds-atb-cell\"></span><span class=\"ds-atb-cell\"></span><span class=\"ds-atb-cell\"></span><span class=\"ds-atb-cell\"></span><span class=\"ds-atb-cell\"></span></div>",
+      "css": ".ds-atb { display: flex; gap: 1px; } .ds-atb-cell { height: 8px; flex: 1 1 0%; border: 1px solid var(--color-ff-edge-lo); background: var(--color-ff-well); } .ds-atb-cell.ds-atb-on { background: var(--color-ff-warn); } .ds-atb.ds-atb-ready .ds-atb-cell.ds-atb-on { background: var(--color-ff-good); }"
+    },
+    {
+      "name": "Card Odds Readout",
+      "kind": "custom",
+      "description": "White percentage beside a banded 6px lamp. The signal never sets the text, so the number stays legible at distance.",
+      "html": "<span class=\"ds-odds\"><span class=\"ds-lamp ds-lamp-good\"></span><span class=\"ds-odds-value\">Card 94%</span></span>",
+      "css": ".ds-odds { display: flex; align-items: center; justify-content: flex-end; gap: 6px; font-family: ui-condensed, Bahnschrift, 'Arial Narrow', system-ui, sans-serif; font-size: 12px; line-height: 1; color: var(--color-ff-ink); text-shadow: 0 0 2px rgb(0 0 0 / 0.9); } .ds-odds-value { font-variant-numeric: tabular-nums; } .ds-lamp { display: inline-block; flex-shrink: 0; width: 6px; height: 6px; border-radius: 9999px; } .ds-lamp-good { background: var(--color-ff-good); } .ds-lamp-warn { background: var(--color-ff-warn); } .ds-lamp-bad { background: var(--color-ff-bad); }"
+    },
+    {
+      "name": "Guardian Force Card",
+      "kind": "card",
+      "refersTo": "guardian-card",
+      "description": "Portrait, name, derived level, then HP and EXP rows over recessed troughs, and a Learning row with an amber lamp.",
+      "html": "<div class=\"ds-gf-card\"><span class=\"ds-corner-tab\">GF</span><div class=\"ds-gf-main\"><img class=\"ds-gf-portrait\" src=\"images/Shiva.png\" alt=\"\" /><div class=\"ds-gf-body\"><div class=\"ds-gf-top\"><span class=\"ds-gf-name\">Shiva</span><span class=\"ds-gf-level\">Lv 2</span></div><div class=\"ds-gf-rows\"><div><div class=\"ds-gf-row\"><span class=\"ds-gf-label\">HP</span><span class=\"ds-gf-value\">394 / 394</span></div><div class=\"ds-gf-trough\"><div class=\"ds-gf-fill ds-gf-fill-hp\" style=\"width: 100%\"></div></div></div><div><div class=\"ds-gf-row\"><span class=\"ds-gf-label\">EXP</span><span class=\"ds-gf-value\">1022</span></div><div class=\"ds-gf-trough\"><div class=\"ds-gf-fill ds-gf-fill-exp\" style=\"width: 2%\"></div></div></div><div class=\"ds-gf-row\"><span class=\"ds-gf-label\">Learning</span><span class=\"ds-gf-learning\"><span class=\"ds-lamp ds-lamp-warn\"></span><span class=\"ds-gf-skill\">HP+80%</span><span class=\"ds-gf-ap\">172 AP</span></span></div></div></div></div></div>",
+      "css": ".ds-gf-card { position: relative; padding: 8px; color: var(--color-ff-ink); background-image: linear-gradient(135deg, var(--color-ff-plate-hi), var(--color-ff-plate-lo)); border: 2px solid; border-top-color: var(--color-ff-edge-hi); border-left-color: var(--color-ff-edge-hi); border-right-color: var(--color-ff-edge-lo); border-bottom-color: var(--color-ff-edge-lo); box-shadow: var(--shadow-plate); font-family: ui-condensed, Bahnschrift, 'Arial Narrow', system-ui, sans-serif; text-shadow: 0 0 2px rgb(0 0 0 / 0.9); } .ds-gf-main { display: flex; gap: 8px; } .ds-gf-portrait { height: 64px; width: auto; flex-shrink: 0; align-self: flex-start; border: 1px solid var(--color-ff-edge-lo); } .ds-gf-portrait-absent { opacity: 0.4; filter: grayscale(1); } .ds-gf-body { min-width: 0; flex: 1 1 0%; } .ds-gf-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; } .ds-gf-name { font-size: 16px; line-height: 22px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .ds-gf-level { flex-shrink: 0; font-size: 12px; line-height: 16px; color: var(--color-ff-ink-dim); } .ds-gf-rows { margin-top: 8px; display: flex; flex-direction: column; gap: 8px; font-size: 12px; line-height: 16px; } .ds-gf-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; } .ds-gf-label { color: var(--color-ff-ink-dim); } .ds-gf-value { font-variant-numeric: tabular-nums; } .ds-gf-trough { margin-top: 4px; height: 8px; width: 100%; border: 2px solid; border-top-color: var(--color-ff-edge-lo); border-left-color: var(--color-ff-edge-lo); border-right-color: var(--color-ff-edge-hi); border-bottom-color: var(--color-ff-edge-hi); background: var(--color-ff-well); } .ds-gf-fill { height: 100%; } .ds-gf-fill-hp { background: var(--color-ff-good); } .ds-gf-fill-exp { background: var(--color-ff-warn); } .ds-gf-learning { display: flex; min-width: 0; align-items: center; gap: 6px; } .ds-gf-skill { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .ds-gf-ap { flex-shrink: 0; color: var(--color-ff-ink-dim); font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Item Ledger",
+      "kind": "card",
+      "description": "One plate holding every row, divided by 1px dark rules: a console inventory rather than a stack of cards.",
+      "html": "<div class=\"ds-ledger\"><span class=\"ds-corner-tab\">Inventory</span><ul class=\"ds-ledger-list\"><li class=\"ds-ledger-row\"><span class=\"ds-ledger-name\">Betrayal Sword</span><span class=\"ds-ledger-qty\">&times;16</span></li><li class=\"ds-ledger-row\"><span class=\"ds-ledger-name\">Holy War-Trial</span><span class=\"ds-ledger-qty\">&times;4</span></li></ul></div>",
+      "css": ".ds-ledger { position: relative; color: var(--color-ff-ink); background-image: linear-gradient(135deg, var(--color-ff-plate-hi), var(--color-ff-plate-lo)); border: 2px solid; border-top-color: var(--color-ff-edge-hi); border-left-color: var(--color-ff-edge-hi); border-right-color: var(--color-ff-edge-lo); border-bottom-color: var(--color-ff-edge-lo); box-shadow: var(--shadow-plate); font-family: ui-condensed, Bahnschrift, 'Arial Narrow', system-ui, sans-serif; text-shadow: 0 0 2px rgb(0 0 0 / 0.9); } .ds-ledger-list { margin: 0; padding: 4px 0 0; list-style: none; } .ds-ledger-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 8px; font-size: 12px; line-height: 16px; border-top: 1px solid var(--color-ff-edge-lo); transition: background-color 120ms linear; } .ds-ledger-row:first-child { border-top: 0; } .ds-ledger-row:hover { background-color: color-mix(in srgb, var(--color-ff-plate-hi) 40%, transparent); } .ds-ledger-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .ds-ledger-qty { flex-shrink: 0; color: var(--color-ff-ink-dim); font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "search-field",
+      "description": "A recessed well with an amber caret and a visible 2px amber focus ring — never outline:none.",
+      "html": "<input class=\"ds-search\" type=\"search\" placeholder=\"Search items\" aria-label=\"Search items\" />",
+      "css": ".ds-search { min-width: 0; flex: 1 1 0%; padding: 4px 8px; border: 2px solid; border-top-color: var(--color-ff-edge-lo); border-left-color: var(--color-ff-edge-lo); border-right-color: var(--color-ff-edge-hi); border-bottom-color: var(--color-ff-edge-hi); background: var(--color-ff-well); color: var(--color-ff-ink); caret-color: var(--color-ff-warn); font-family: ui-condensed, Bahnschrift, 'Arial Narrow', system-ui, sans-serif; font-size: 12px; line-height: 16px; } .ds-search::placeholder { color: var(--color-ff-ink-dim); } .ds-search:focus-visible { outline: 2px solid var(--color-ff-warn); outline-offset: 2px; }"
+    },
+    {
+      "name": "Sort Control",
+      "kind": "button",
+      "refersTo": "sort-tab",
+      "description": "Two tabs in a recessed well, matching the navigation: the active segment takes the plate gradient and the amber inset edge.",
+      "html": "<div class=\"ds-sort\" role=\"group\" aria-label=\"Sort items\"><button class=\"ds-sort-seg ds-sort-seg-active\" type=\"button\" aria-pressed=\"true\">Name</button><button class=\"ds-sort-seg ds-sort-seg-next\" type=\"button\" aria-pressed=\"false\">Qty</button></div>",
+      "css": ".ds-sort { display: flex; align-items: stretch; border: 2px solid; border-top-color: var(--color-ff-edge-lo); border-left-color: var(--color-ff-edge-lo); border-right-color: var(--color-ff-edge-hi); border-bottom-color: var(--color-ff-edge-hi); background: var(--color-ff-well); font-family: ui-condensed, Bahnschrift, 'Arial Narrow', system-ui, sans-serif; font-size: 12px; line-height: 16px; } .ds-sort-seg { padding: 4px 12px; border: 0; background: transparent; color: var(--color-ff-ink-dim); font: inherit; cursor: pointer; } .ds-sort-seg-next { border-left: 2px solid var(--color-ff-edge-lo); } .ds-sort-seg:hover { color: var(--color-ff-ink); } .ds-sort-seg:focus-visible { outline: 2px solid var(--color-ff-warn); outline-offset: -2px; } .ds-sort-seg-active { background-image: linear-gradient(135deg, var(--color-ff-plate-hi), var(--color-ff-plate-lo)); box-shadow: inset 0 -3px 0 var(--color-ff-warn); color: var(--color-ff-ink); text-shadow: 0 0 2px rgb(0 0 0 / 0.9); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Junction Terminal",
+    "overview": "This is an instrument junctioned to a running game, wearing the game's own clothes. It does not present a dashboard; it reports. Every surface is a readout plate that a player glances at while their hands are on a controller and their eyes are mostly on another monitor, which is why the interface is a 540x360 menu window rather than an application: it is small, always visible, and never the thing being looked at directly.\n\nThe world is Final Fantasy VIII's menu, and the migration to it was the point. The original mod this fork descends from was a grey Win32 dialog — beveled buttons, spinners, File Edit View Window Help. That was replaced, first by a NES-era FF1 pastiche and now by the real thing: grey metal plates carrying a two-colour bevel, a hard black offset shadow, black corner tabs naming each panel, a black field, and white ink in a condensed grotesque with a dark bloom. The claim is unchanged and now literal — a game's state is best reported in the visual language of the game that produced it.\n\nThe material is the period's material: flat two-dimensional plates, not photographed metal. FF8's own menus are gradient fills with drawn bevels, and this system renders them the same way (linear-gradient plus a four-colour border), so the build's medium matches its source's medium rather than imitating a physical object. Density is high and ornamental load is zero: no imagery beyond the game's own portraits, no icon set, no radius, no typeface beyond one. Hierarchy comes from tone, bevel, rule work and size — never from hue.",
+    "keyCharacteristics": [
+      "540x360 companion window (320x160 floor), a second-monitor readout rather than an app to live in.",
+      "Four tones of one grey family plus a two-colour bevel; a black field; white ink. No hue carries hierarchy.",
+      "One shadow in the whole system: hard, 5px, zero blur. The bevel does the edge work; the offset does the stacking.",
+      "Small black corner tabs name every panel — the world's signature device, and the only uppercase type.",
+      "Mixed case everywhere else, in a self-hosted condensed grotesque with tabular figures.",
+      "Two surface tiers only: a raised plate that holds live state, a recessed well for controls, troughs and empty slots.",
+      "Panes own their scrolling; the plate is the frame, the scroller is inside it."
+    ],
+    "rules": [
+      {
+        "name": "The Four Tones Rule",
+        "body": "One grey family, four tones (plate light, plate dark, recess, field) and two bevel edges. There is no second hue family, no blue, no warm grey, and no tint of either. If a surface needs to separate from another, it moves a tone or it gains a bevel; it never gains a colour.",
+        "section": "colors"
+      },
+      {
+        "name": "The Bevel Rule",
+        "body": "Nothing is separated by whitespace alone. Two things that are distinct are separated by a two-colour bevel (light top/left, dark bottom/right) or by a 2px dark rule. Whitespace sets rhythm; edges carry meaning.",
+        "section": "colors"
+      },
+      {
+        "name": "The Signal Is Never Text Rule",
+        "body": "Green, amber and red fill bars, lamps and lit edges. They never set a word or a number. Saturated state colour cannot reach 4.5:1 as 12px text on mid metal, and a value the player must read at a glance is the last thing that should be carrying its state in hue alone. Every coloured signal ships beside a white value or a white status word.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Face Rule",
+        "body": "One typeface, forever. No display face, no serif for flavour, no icon font, no second weight beyond regular and bold.",
+        "section": "typography"
+      },
+      {
+        "name": "The Corner Tab Rule",
+        "body": "Uppercase belongs to the 11px corner tabs and to nothing else. Names, labels, item names and status words are mixed case, because that is how FF8's menus read. A screen of all-caps condensed type is the FF1 system's voice, not this one.",
+        "section": "typography"
+      },
+      {
+        "name": "The Twelve Floor Rule",
+        "body": "Nothing is set below 12px except the 11px corner tab. The viewer is read from a second monitor under split attention, and the label tier sits at 12px for that reason; sub-12px copy is a regression against a stated product need, not a density choice.",
+        "section": "typography"
+      },
+      {
+        "name": "The Lining Figures Rule",
+        "body": "Every changing numeral is tabular. A health value that shifts its own width while the player is watching it is a defect, not a detail.",
+        "section": "typography"
+      },
+      {
+        "name": "The No Page Scroll Rule",
+        "body": "The window never scrolls. Only a nameable pane does. If content overflows the window, the fix is a pane, not a scrollbar on <body>.",
+        "section": "layout"
+      },
+      {
+        "name": "The 540 Rule",
+        "body": "Every screen is composed for 540x360 first. 320px must remain usable, but no composition may depend on width the default window does not have.",
+        "section": "layout"
+      },
+      {
+        "name": "The Frame Owns The Label Rule",
+        "body": "A corner tab belongs to the plate, not to the scroll container. If a label clips, the frame/scroller nesting is wrong, not the label's position.",
+        "section": "layout"
+      }
+    ],
+    "dos": [
+      "Do keep one grey family: Plate Light and Plate Dark for raised, Recess Black for recessed, Field Black behind everything, white ink on top.",
+      "Do draw every edge as a two-colour bevel, light on top/left and dark on bottom/right, inverted for wells. The bevel is the material.",
+      "Do give every plate a black corner tab naming it, straddling the top edge — and nest the scroll container inside the plate so the tab is never clipped.",
+      "Do keep the one shadow hard and constant: 5px 5px 0 #000, no blur, no hover lift, no second step.",
+      "Do set every changing numeral in tabular-nums — health, EXP, level, quantity, odds, AP.",
+      "Do pair every coloured signal with a white value or word, and keep role=\"meter\" with live aria-valuenow on the ATB meter.",
+      "Do show absence by terracing: an unobtained Guardian is a well with a greyscale portrait, holding the same space as a present one.",
+      "Do keep the empty states written: an idle battle column, an empty inventory and a searching window each say what they are."
+    ],
+    "donts": [
+      "Don't blur the shadow, add a second shadow, or lift a plate on hover. One hard offset is the whole depth system.",
+      "Don't round anything. No 4px \"softening\", no card radii, no pill buttons — the 6px lamp is the only curve.",
+      "Don't set state colour as text. Green, amber and red fill bars, lamps and lit edges, never words or numbers.",
+      "Don't reintroduce the FF1 system: no #0000a8 blue, no lavender labels, no white 2px frames, no all-caps condensed type outside the corner tabs.",
+      "Don't go below 12px except the 11px corner tab, and don't trade the label tier for density.",
+      "Don't ship a focus state as outline: none; keyboard focus is a 2px amber outline, always visible.",
+      "Don't let the navigation clip. Below roughly 430px the connection words drop and the lamp carries the state alone; the tabs never truncate.",
+      "Don't let the window scroll. Overflow belongs to a pane.",
+      "Don't drift toward a modern dashboard, NES pixel-art pastiche, glassmorphism, ornate fantasy chrome, or mobile card stacks — all five are confirmed anti-references.",
+      "Don't treat the metal as a photograph. This is a flat 2D plate language: gradients and drawn bevels are the medium, and painted or photographic textures would be a different world."
+    ]
+  }
+}

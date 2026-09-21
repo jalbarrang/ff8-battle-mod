@@ -4,14 +4,13 @@
 </script>
 
 <div class="flex min-h-0 flex-1 flex-col">
-  <div
-    class="flex shrink-0 items-center gap-2 border-b-2 border-ff-border bg-ff-window-dark px-3 py-1 text-[10px]"
-  >
+  <div class="bar flex shrink-0 items-center gap-2 px-2 py-1 text-label">
     {#if gameState.battleStarted}
-      <span class="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-ff-bad"></span>
-      <span class="text-ff-bad">Battle in progress</span>
+      <span class="lamp animate-pulse rounded-full bg-ff-bad"></span>
+      <span>Battle in progress</span>
     {:else}
-      <span class="text-ff-label">No battle — showing party status</span>
+      <span class="lamp rounded-full bg-ff-edge-hi"></span>
+      <span class="text-ff-ink-dim">No fight running — party status only</span>
     {/if}
   </div>
 

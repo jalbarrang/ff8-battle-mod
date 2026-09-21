@@ -45,11 +45,30 @@ pnpm dev
 Useful commands:
 
 ```powershell
-pnpm check          # Svelte checks plus native TypeScript 7 checks
+pnpm check          # Svelte checks, native TypeScript 7 checks, and the design-system lint
 pnpm build          # SvelteKit renderer + Electron main bundle
 pnpm package        # unpacked Electron application
 pnpm make           # Squirrel installer and portable ZIP
 ```
+
+### Design-system lint
+
+`pnpm lint` runs `@shadcn/lint` over the Svelte components and enforces the rules recorded in
+[DESIGN.md](./DESIGN.md): no colour outside the `--color-ff-*` tokens, no value outside the
+`--text-*` scale, no class Tailwind or `src/styles/global.css` cannot generate. It is part of
+`pnpm check`, and each error names the token to use instead and points back at DESIGN.md.
+
+Two things had to be added to make it work here, both worth knowing before removing them:
+
+- **A patch.** `@shadcn/lint` reads JSX `className` attributes upstream, so in a `.svelte` file it
+  reports nothing at all — a lint command that always passes. `patches/@shadcn__lint@0.1.5.patch`
+  teaches it Svelte class attributes as a purely additive change. Delete the patch and the two
+  parser devDependencies once upstream supports Svelte.
+- **ESLint rather than Oxlint.** The plugin's own setup guide suggests Oxlint for a project with no
+  linter, but Oxlint has no Svelte parser, so ESLint is the only host that can read these files.
+
+`shadcn/no-inline-styles` is deliberately not enabled: it is still blind to Svelte `style`
+attributes, and a rule that silently checks nothing is worse than one that is absent.
 
 Build output is written under `out/`:
 

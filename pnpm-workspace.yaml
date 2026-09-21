@@ -4,11 +4,15 @@ allowBuilds:
   koffi: true
 blockExoticSubdeps: false
 engineStrict: true
+minimumReleaseAgeExclude:
+  - '@shadcn/lint@0.1.5'
+  - cn@0.3.2
 nodeLinker: hoisted
 overrides:
   '@electron/packager': 20.3.0
   '@electron/rebuild': 4.2.0
 patchedDependencies:
   '@electron-forge/core@7.11.2': patches/@electron-forge__core@7.11.2.patch
+  '@shadcn/lint@0.1.5': patches/@shadcn__lint@0.1.5.patch
   cross-zip@4.0.1: patches/cross-zip@4.0.1.patch
 strictPeerDependencies: true

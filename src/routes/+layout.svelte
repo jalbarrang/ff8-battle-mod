@@ -23,6 +23,7 @@
   }
 
   const activeRoute = $derived(routeOf(page.url));
+  const connected = $derived(gameState.processStatus === 'connected');
 
   // The Battle screen takes over when a fight starts and hands control back to
   // whatever tab was open when it ends. Manual navigation mid-fight is
@@ -52,31 +53,40 @@
   });
 </script>
 
-<div class="flex h-screen w-full flex-col overflow-hidden bg-ff-field font-ff tracking-wider text-ff-border uppercase">
-  <nav class="flex shrink-0 items-stretch border-b-2 border-ff-border bg-ff-window-dark text-xs" aria-label="Sections">
+<div class="flex h-screen w-full flex-col overflow-hidden bg-ff-field font-ff text-ff-ink">
+  <nav class="bar flex shrink-0 items-stretch text-nav" aria-label="Sections">
     {#each TABS as tab (tab.route)}
       <a
         href={tab.href}
         aria-current={activeRoute === tab.route ? 'page' : undefined}
-        class="relative flex items-center gap-1.5 border-r-2 border-ff-border px-3 py-1.5 transition-colors hover:bg-ff-window"
-        class:bg-ff-window={activeRoute === tab.route}
-        class:text-ff-warn={activeRoute === tab.route}
+        class="tab"
+        class:tab-active={activeRoute === tab.route}
       >
-        {tab.label}
+        <span>{tab.label}</span>
         {#if tab.route === '/battle' && gameState.battleStarted}
-          <span class="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-ff-bad" title="Battle in progress"></span>
+          <span
+            class="lamp animate-pulse rounded-full bg-ff-bad"
+            title="Battle in progress"
+          ></span>
         {/if}
       </a>
     {/each}
-    <span class="ml-auto flex items-center px-3 text-[10px] text-ff-label normal-case">
-      {gameState.processStatus === 'connected' ? 'FF8 connected' : 'Searching…'}
+
+    <!-- The lamp carries the state on its own; the words drop before the tabs
+         are allowed to clip at the window's narrow end. -->
+    <span class="ml-auto flex shrink-0 items-center gap-2 px-3 text-label text-ff-ink-dim">
+      <span class="lamp rounded-full {connected ? 'bg-ff-good' : 'bg-ff-warn'}"></span>
+      <span class="hidden status:inline">{connected ? 'FF8 connected' : 'Searching…'}</span>
     </span>
   </nav>
 
   <main class="flex min-h-0 flex-1 flex-col overflow-hidden">
-    {#if gameState.processStatus === 'searching'}
-      <div class="flex flex-1 items-center justify-center p-6 text-xs">
-        Looking for process FF8_EN.exe
+    {#if !connected}
+      <div class="flex flex-1 items-center justify-center p-6">
+        <div class="plate px-4 pb-3 pt-4">
+          <span class="tab-label">Status</span>
+          <p class="text-nav">Searching for FF8_EN.exe…</p>
+        </div>
       </div>
     {:else}
       {@render children()}

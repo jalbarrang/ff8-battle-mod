@@ -27,8 +27,17 @@
     showCardChance && !character.isDead ? cardSuccessChance(currentHealth, maxHealth) : null
   );
   const facingParty = $derived(side === 'party');
-  const oddsColour = $derived(
-    cardChance === null ? '' : cardChance >= 0.9 ? 'text-ff-good' : cardChance < 0.5 ? 'text-ff-bad' : 'text-ff-warn'
+
+  // The odds lamp carries the band, never the words: saturated green, amber and
+  // red cannot reach 4.5:1 as 10px text on metal, and the number stays legible.
+  const oddsLamp = $derived(
+    cardChance === null
+      ? ''
+      : cardChance >= 0.9
+        ? 'bg-ff-good'
+        : cardChance < 0.5
+          ? 'bg-ff-bad'
+          : 'bg-ff-warn'
   );
 
   // The enemy ATB gauge is a 0..15 counter, so it is rendered as 15 discrete
@@ -45,23 +54,29 @@
   const atbReady = $derived(atb === ATB_FULL);
 </script>
 
-<div class="flex flex-col gap-0.5">
+<div class="flex flex-col gap-1">
   <div class="flex items-center gap-2" class:flex-row-reverse={facingParty}>
     {#if portrait}
-      <img src={portrait} alt="" class="h-10 w-auto shrink-0 border border-ff-border/60" />
+      <img src={portrait} alt="" class="h-10 w-auto shrink-0 border border-ff-edge-lo" />
     {/if}
-    <div class="flex flex-1 items-baseline justify-between gap-2" class:flex-row-reverse={facingParty}>
+    <div
+      class="flex flex-1 items-baseline justify-between gap-2"
+      class:flex-row-reverse={facingParty}
+    >
       <span class="flex min-w-0 items-baseline gap-1.5">
-        <span class="truncate text-sm font-bold">{name}</span>
+        <span class="truncate text-name font-bold">{name}</span>
         {#if showLevel && character.currentLevel !== undefined}
-          <span class="shrink-0 text-[10px] leading-none text-ff-label">LV {character.currentLevel}</span>
+          <span class="shrink-0 text-label leading-none text-ff-ink-dim">
+            Lv {character.currentLevel}
+          </span>
         {/if}
       </span>
-      <span class="shrink-0 text-sm tabular-nums">
-        {currentHealth}<span class="text-ff-label">/</span>{maxHealth}
+      <span class="shrink-0 text-name tabular-nums">
+        {currentHealth}<span class="text-ff-ink-dim">/</span>{maxHealth}
       </span>
     </div>
   </div>
+
   {#if atb !== null}
     <div
       class="flex gap-px"
@@ -75,25 +90,28 @@
     >
       {#each atbCells as cell (cell)}
         <span
-          class="h-1.5 flex-1 border border-ff-border/50"
+          class="h-2 flex-1 border border-ff-edge-lo"
           class:bg-ff-good={cell < atb && atbReady}
           class:bg-ff-warn={cell < atb && !atbReady}
-          class:bg-ff-window-dark={cell >= atb}
+          class:bg-ff-well={cell >= atb}
         ></span>
       {/each}
     </div>
   {/if}
+
   {#if cardChance !== null}
     <span
-      class="text-right text-[10px] leading-none {oddsColour}"
+      class="flex items-center justify-end gap-1.5 text-label leading-none"
       title={`Card capture roll: ${(cardChance * 100).toFixed(1)}% (succeeds when 256 - 255 x HP/maxHP >= rand 0..255)`}
     >
-      Card {Math.round(cardChance * 100)}%
+      <span class="lamp rounded-full {oddsLamp}"></span>
+      <span class="tabular-nums">Card {Math.round(cardChance * 100)}%</span>
     </span>
   {/if}
+
   {#if showExp && character.currentExp !== undefined}
     <span
-      class="text-[10px] leading-none text-ff-label"
+      class="text-label leading-none text-ff-ink-dim"
       class:text-right={!facingParty}
       title={`Experience ${character.currentExp}`}
     >
