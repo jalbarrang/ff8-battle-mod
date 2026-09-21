@@ -32,7 +32,6 @@
 
   <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
     <div class="plate p-2">
-      <span class="tab-label">Odin</span>
       <div class="flex items-center gap-2">
         {#if odinCard}
           <img
@@ -60,7 +59,6 @@
     </div>
 
     <div class="plate p-2">
-      <span class="tab-label">Gilgamesh</span>
       <div class="flex items-center gap-2">
         {#if gilgameshCard}
           <img
