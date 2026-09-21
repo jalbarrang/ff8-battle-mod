@@ -11,6 +11,10 @@ The memory map targets the English Steam 2013 executable: **`FF8_EN.exe`**.
 
 > This is a fork of [dw1284/ff8-battle-mod](https://github.com/dw1284/ff8-battle-mod), originally created by Dennis Williams. The modernized fork is maintained at [jalbarrang/ff8-battle-mod](https://github.com/jalbarrang/ff8-battle-mod).
 
+## Artwork
+
+Character and Guardian Force mugshots under `public/images/` are cropped from the Final Fantasy VIII mugshot sheet captured by **CaSquall** (hosted on The Spriters Resource). Odin and Gilgamesh have no menu mugshots, so they use their Triple Triad cards. Final Fantasy VIII and all of its artwork are © Square Enix; they are included here for non-commercial fan use.
+
 ## Safety model
 
 The application opens the running `FF8_EN.exe` process with read-only access (`PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_VM_READ`) and only ever calls `ReadProcessMemory`. It cannot write to the game's memory, does not patch the executable on disk, and does not touch save files.

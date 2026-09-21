@@ -6,7 +6,9 @@ import type {
   GameValue,
   GameValueDeltas,
   GuardianForce,
+  GuardianLearningEntry,
   GuardianRosterEntry,
+  GuardianSpecialFlags,
   GuardianStatsEntry,
   InventoryItem,
   ItemSlot,
@@ -48,6 +50,8 @@ const partyMembers = $state<BattleCharacter[]>(
 
 let guardianRoster = $state<GuardianRosterEntry[]>([]);
 let guardianStats = $state<GuardianStatsEntry[]>([]);
+let guardianLearning = $state<GuardianLearningEntry[]>([]);
+let guardianSpecialFlags = $state<GuardianSpecialFlags>({ odin: false, gilgamesh: false });
 let inventory = $state<ItemSlot[]>([]);
 
 // Enemy slots only count as occupied once the battle setup writes their max HP,
@@ -79,6 +83,7 @@ const guardians = $derived.by((): GuardianForce[] =>
     name,
     unlocked: guardianRoster[id]?.unlocked ?? false,
     learningSkillId: guardianRoster[id]?.learningSkillId ?? 0,
+    learningAp: guardianLearning[id]?.learningAp ?? 0,
     currentHealth: guardianStats[id]?.currentHealth ?? 0,
     maxHealth: guardianStats[id]?.maxHealth ?? 0,
     exp: guardianStats[id]?.exp ?? 0
@@ -118,6 +123,11 @@ function applyDeltas(deltas: GameValueDeltas): void {
       guardianRoster = (newVal as GuardianRosterEntry[] | null) ?? [];
     } else if (propertyName === 'guardianStats') {
       guardianStats = (newVal as GuardianStatsEntry[] | null) ?? [];
+    } else if (propertyName === 'guardianLearning') {
+      guardianLearning = (newVal as GuardianLearningEntry[] | null) ?? [];
+    } else if (propertyName === 'guardianSpecialFlags') {
+      guardianSpecialFlags =
+        (newVal as GuardianSpecialFlags | null) ?? { odin: false, gilgamesh: false };
     } else if (propertyName.includes('Enemy')) {
       receiveEnemyValue(propertyName, newVal);
     } else if (propertyName.includes('PartyMember')) {
@@ -168,6 +178,9 @@ export const gameState = {
   },
   get guardians(): GuardianForce[] {
     return guardians;
+  },
+  get guardianSpecialFlags(): GuardianSpecialFlags {
+    return guardianSpecialFlags;
   },
   get items(): InventoryItem[] {
     return items;

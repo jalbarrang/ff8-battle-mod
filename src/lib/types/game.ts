@@ -14,6 +14,16 @@ export interface GuardianStatsEntry {
   exp: number;
 }
 
+export interface GuardianLearningEntry {
+  learningSkillId: number;
+  learningAp: number;
+}
+
+export interface GuardianSpecialFlags {
+  odin: boolean;
+  gilgamesh: boolean;
+}
+
 export type GameValue =
   | boolean
   | number
@@ -23,6 +33,8 @@ export type GameValue =
   | ItemSlot[]
   | GuardianRosterEntry[]
   | GuardianStatsEntry[]
+  | GuardianLearningEntry[]
+  | GuardianSpecialFlags
   | null;
 
 export interface Character {
@@ -57,6 +69,7 @@ export interface GuardianForce {
   name: string;
   unlocked: boolean;
   learningSkillId: number;
+  learningAp: number;
   currentHealth: number;
   maxHealth: number;
   exp: number;

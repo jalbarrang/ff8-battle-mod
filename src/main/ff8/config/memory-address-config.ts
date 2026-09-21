@@ -33,6 +33,30 @@ const decodeInventory = (values: MemoryValue[]): MemoryValue => {
 const GUARDIAN_COUNT = 16;
 const GUARDIAN_ROSTER_STRIDE = 0x44;
 const GUARDIAN_ROSTER_SIZE = (GUARDIAN_COUNT - 1) * GUARDIAN_ROSTER_STRIDE + 0x30;
+
+// The GF save record (record base 0x01CFDCA8) stores the ability being learned
+// at +0x40 and one AP byte per learnable ability at +0x24. Those AP slots are
+// ordered by the GF's own kernel ability list, not by global ability id, so the
+// matching slot is looked up in the loaded kernel.bin buffer.
+const GUARDIAN_RECORD_BASE = 0x01CFDCA8;
+const GUARDIAN_RECORD_AP_OFFSET = 0x24;
+const GUARDIAN_RECORD_LEARNING_OFFSET = 0x40;
+
+// readFilesKernelNamedicIconSysfnt loads kernel.bin whole into the static buffer
+// at 0x01CF3E48. The 16 junctionable-GF sections start at file offset 0x0F78 and
+// are 0x84 bytes each, with 21 ability ids at +0x1E + slot*4.
+const KERNEL_GF_BASE = 0x01CF4DC0;
+const KERNEL_GF_SECTION_SIZE = 0x84;
+const KERNEL_GF_ABILITY_OFFSET = 0x1e;
+const GUARDIAN_ABILITY_SLOTS = 21;
+
+// Odin/Gilgamesh/Phoenix possession and related story flags (SG_ODIN_ANGEL_-
+// GILGA_FLAG in ff8-speedruns/ff8-memory). 0x02 = possess Odin, 0x08 = possess
+// Gilgamesh, 0x04 = Phoenix called once.
+const GUARDIAN_SPECIAL_FLAGS_ADDRESS = 0x01CFE97A;
+const GUARDIAN_SPECIAL_ODIN = 0x02;
+const GUARDIAN_SPECIAL_GILGAMESH = 0x08;
+
 const decodeGuardianRoster = (values: MemoryValue[]): MemoryValue => {
   const bytes = (values[0] ?? []) as number[];
   if (bytes.length < GUARDIAN_ROSTER_SIZE) return [];
@@ -55,6 +79,39 @@ const decodeGuardianStats = (values: MemoryValue[]): MemoryValue => {
     maxHealth: buffer.readUInt16LE(index * GUARDIAN_STATS_STRIDE + 2),
     exp: buffer.readUInt32LE(index * GUARDIAN_STATS_STRIDE + 4)
   }));
+};
+
+// Joins the kernel ability list to each GF's AP bytes to report how much AP the
+// GF has accumulated toward the ability it is currently learning.
+const decodeGuardianLearning = (values: MemoryValue[]): MemoryValue => {
+  const kernel = (values[0] ?? []) as number[];
+  const records = (values[1] ?? []) as number[];
+  if (kernel.length < GUARDIAN_COUNT * KERNEL_GF_SECTION_SIZE) return [];
+  if (records.length < GUARDIAN_COUNT * GUARDIAN_ROSTER_STRIDE) return [];
+
+  return Array.from({ length: GUARDIAN_COUNT }, (_, index) => {
+    const recordBase = index * GUARDIAN_ROSTER_STRIDE;
+    const learningSkillId = records[recordBase + GUARDIAN_RECORD_LEARNING_OFFSET] ?? 0;
+    const kernelBase = index * KERNEL_GF_SECTION_SIZE + KERNEL_GF_ABILITY_OFFSET;
+
+    let learningAp = 0;
+    for (let slot = 0; slot < GUARDIAN_ABILITY_SLOTS; slot += 1) {
+      if (kernel[kernelBase + slot * 4] === learningSkillId) {
+        learningAp = records[recordBase + GUARDIAN_RECORD_AP_OFFSET + slot] ?? 0;
+        break;
+      }
+    }
+
+    return { learningSkillId, learningAp };
+  });
+};
+
+const decodeGuardianSpecialFlags = (values: MemoryValue[]): MemoryValue => {
+  const byte = Number(values[0] ?? 0);
+  return {
+    odin: (byte & GUARDIAN_SPECIAL_ODIN) !== 0,
+    gilgamesh: (byte & GUARDIAN_SPECIAL_GILGAMESH) !== 0
+  };
 };
 
 const memoryAddressConfig: MemoryAddressConfig = {
@@ -1880,6 +1937,29 @@ const memoryAddressConfig: MemoryAddressConfig = {
       size: GUARDIAN_COUNT * GUARDIAN_STATS_STRIDE,
     }],
     valueTransformerOut: decodeGuardianStats,
+  },
+  guardianLearning: {
+    locations: [{
+      address: KERNEL_GF_BASE,
+      offsets: [],
+      type: 'bytes',
+      size: GUARDIAN_COUNT * KERNEL_GF_SECTION_SIZE,
+    }, {
+      address: GUARDIAN_RECORD_BASE,
+      offsets: [],
+      type: 'bytes',
+      size: GUARDIAN_COUNT * GUARDIAN_ROSTER_STRIDE,
+    }],
+    valueTransformerOut: decodeGuardianLearning,
+  },
+  guardianSpecialFlags: {
+    locations: [{
+      address: GUARDIAN_SPECIAL_FLAGS_ADDRESS,
+      offsets: [],
+      type: 'byte',
+      size: null,
+    }],
+    valueTransformerOut: decodeGuardianSpecialFlags,
   },
 };
 
