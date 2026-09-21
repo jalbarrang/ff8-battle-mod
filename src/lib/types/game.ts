@@ -32,10 +32,9 @@ export interface GameValueDelta {
 }
 
 export type GameValueDeltas = Record<string, GameValueDelta>;
-export type CharacterUpdate = Record<string, GameValue>;
 
 export interface Ff8Api {
   onGameValuesUpdated(callback: (deltas: GameValueDeltas) => void): () => void;
   onProcessStatusChanged(callback: (status: 'searching' | 'connected') => void): () => void;
-  updateGameValue(propertyName: string, value: GameValue): void;
+  requestSnapshot(): void;
 }

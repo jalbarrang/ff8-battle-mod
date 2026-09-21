@@ -2,21 +2,11 @@
   import { onMount } from 'svelte';
 
   import BattleStatusComponent from '../components/BattleStatusComponent/BattleStatusComponent.svelte';
-  import MenuDrawerComponent from '../components/MenuDrawerComponent.svelte';
-  import PartyEditMenu from '../components/PartyEditMenu.svelte';
   import TeamStatusComponent from '../components/TeamStatusComponent/TeamStatusComponent.svelte';
-  import type {
-    BattleCharacter,
-    CharacterUpdate,
-    GameValue,
-    GameValueDeltas,
-    TeamMember
-  } from '$lib/types/game';
+  import type { BattleCharacter, GameValue, GameValueDeltas, TeamMember } from '$lib/types/game';
 
-  let ff8MenuIsOpen = $state(false);
   let processStatus = $state<'searching' | 'connected'>('searching');
   let battleStarted = $state(false);
-  let enemyAttacksEnabled = $state(true);
 
   const teamMembers = $state<TeamMember[]>([
     { id: 0, name: 'Squall' },
@@ -33,6 +23,17 @@
   );
   const partyMembers = $state<BattleCharacter[]>(
     Array.from({ length: 3 }, (_, index) => ({ id: index + 1, name: `Party ${index + 1}` }))
+  );
+
+  // Only occupied slots are displayed. An enemy slot is in use once the battle
+  // setup has written its max HP (which stays set after the enemy dies), and a
+  // party slot is in use when the engine has assigned it a team member (255 is
+  // the empty-slot marker).
+  const activeEnemies = $derived(enemies.filter((enemy) => (enemy.maxHealth ?? 0) > 0));
+  const activePartyMembers = $derived(
+    partyMembers.filter(
+      (member) => member.teamMemberId !== undefined && member.teamMemberId !== 255
+    )
   );
 
   const teamReady = $derived(teamMembers.every((member) => member.magic !== undefined));
@@ -65,71 +66,12 @@
     assignValue(partyMembers.find((member) => member.id === Number(rawId)), attributeName!, value);
   }
 
-  function emitUpdate(propertyName: string, value: GameValue): void {
-    window.ff8?.updateGameValue(propertyName, value);
-  }
-
-  function sendTeamMemberValues(teamMemberName: string, data: CharacterUpdate): void {
-    for (const [key, value] of Object.entries(data)) {
-      emitUpdate(`${key}TeamMember${teamMemberName}`, value);
-    }
-  }
-
-  function sendEnemyValues(enemyId: number, data: CharacterUpdate): void {
-    for (const [key, value] of Object.entries(data)) emitUpdate(`${key}Enemy${enemyId}`, value);
-  }
-
-  function sendPartyMemberValues(partyMemberId: number, data: CharacterUpdate): void {
-    for (const [key, value] of Object.entries(data)) {
-      emitUpdate(`${key}PartyMember${partyMemberId}`, value);
-    }
-  }
-
   function applyDeltas(deltas: GameValueDeltas): void {
     for (const [propertyName, { newVal }] of Object.entries(deltas)) {
       if (propertyName.includes('Enemy')) receiveEnemyValue(propertyName, newVal);
       else if (propertyName.includes('PartyMember')) receivePartyMemberValue(propertyName, newVal);
       else if (propertyName.includes('TeamMember')) receiveTeamMemberValue(propertyName, newVal);
       else if (propertyName === 'battleStarted') battleStarted = Boolean(newVal);
-      else if (propertyName === 'enemyAttacksEnabled') enemyAttacksEnabled = Boolean(newVal);
-      else if (propertyName === 'menuIsOpen') ff8MenuIsOpen = Boolean(newVal);
-    }
-  }
-
-  function killAllEnemies(): void {
-    const originalAttackEnabledValue = enemyAttacksEnabled;
-    emitUpdate('enemyAttacksEnabled', false);
-    emitUpdate('damageLimitEnabled', false);
-    emitUpdate('killOnNextPoisonTick', true);
-    for (const enemy of enemies) {
-      sendEnemyValues(enemy.id, { hasPoisonWithoutAnimation: true, atb: 46 });
-    }
-
-    const interval = window.setInterval(() => {
-      if (enemies.every((enemy) => enemy.currentHealth === 0)) {
-        emitUpdate('killOnNextPoisonTick', false);
-        emitUpdate('damageLimitEnabled', true);
-        emitUpdate('enemyAttacksEnabled', originalAttackEnabledValue);
-        window.clearInterval(interval);
-      }
-    }, 50);
-  }
-
-  function toggleEnemyAttacks(): void {
-    emitUpdate('enemyAttacksEnabled', !enemyAttacksEnabled);
-  }
-
-  function damageAllEnemies(): void {
-    for (const enemy of enemies.filter(
-      (candidate) => !candidate.isDead && (candidate.currentHealth ?? 0) > 0
-    )) {
-      sendEnemyValues(enemy.id, { currentHealth: 1 });
-    }
-  }
-
-  function cureAllPartyMembers(): void {
-    for (const member of partyMembers) {
-      sendPartyMemberValues(member.id, { currentHealth: member.maxHealth ?? 0 });
     }
   }
 
@@ -140,6 +82,9 @@
       processStatus = status;
       if (status === 'searching') battleStarted = false;
     });
+    // The watcher only pushes changes, so a renderer that mounts after it has
+    // already connected has to ask for the current state explicitly.
+    window.ff8.requestSnapshot();
     return () => {
       removeDeltasListener();
       removeStatusListener();
@@ -147,47 +92,16 @@
   });
 </script>
 
-<app-shell>
-  <MenuDrawerComponent maxHeight="300px">
-    <PartyEditMenu
-      {partyMembers}
-      {teamMembers}
-      onPartyMemberChange={sendPartyMemberValues}
-      onTeamMemberChange={sendTeamMemberValues}
-      disabled={ff8MenuIsOpen ? ['main-party'] : false}
-    />
-  </MenuDrawerComponent>
+<div class="flex h-screen w-full flex-col overflow-hidden bg-ff-field font-ff tracking-wider text-ff-border uppercase">
   {#if processStatus === 'searching'}
-    <empty-state>Looking for process FF8_EN.exe</empty-state>
+    <div class="flex flex-1 items-center justify-center p-6 text-xs">
+      Looking for process FF8_EN.exe
+    </div>
   {:else if battleStarted}
-    <BattleStatusComponent
-      {enemies}
-      {partyMembers}
-      {enemyAttacksEnabled}
-      onEnemyChange={sendEnemyValues}
-      onPartyMemberChange={sendPartyMemberValues}
-      onKillAllEnemiesClick={killAllEnemies}
-      onDisableEnableEnemyAttacksClick={toggleEnemyAttacks}
-      onDamageAllEnemiesClick={damageAllEnemies}
-      onCureAllPartyMembersClick={cureAllPartyMembers}
-    />
+    <BattleStatusComponent enemies={activeEnemies} partyMembers={activePartyMembers} />
   {:else if teamReady}
-    <TeamStatusComponent {teamMembers} onTeamMemberChange={sendTeamMemberValues} />
+    <TeamStatusComponent {teamMembers} />
   {:else}
-    <empty-state>Reading FF8 data…</empty-state>
+    <div class="flex flex-1 items-center justify-center p-6 text-xs">Reading FF8 data…</div>
   {/if}
-</app-shell>
-
-<style>
-  app-shell {
-    display: flex;
-    height: 100%;
-  }
-
-  empty-state {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-  }
-</style>
+</div>

@@ -1,11 +1,11 @@
-# FF8 Battle and Party Editor
+# FF8 Battle and Party Viewer
 
-A Windows desktop tool for editing Final Fantasy VIII gameplay state in real time.
+A Windows desktop tool for viewing Final Fantasy VIII gameplay state in real time. This fork is deliberately read-only: it never writes to the game.
 
-- Edit party composition and character availability
-- Edit character levels, HP, magic, and inventory-related values
-- Display and manipulate enemies during battle
-- Disable enemy attacks and field battles
+- Party composition and character availability
+- Character levels, HP and magic
+- Enemy names, HP and KO state during battle, with live Card capture odds
+- No memory writes, no code patches, no save-file access
 
 The memory map targets the English Steam 2013 executable: **`FF8_EN.exe`**.
 
@@ -13,7 +13,7 @@ The memory map targets the English Steam 2013 executable: **`FF8_EN.exe`**.
 
 ## Safety model
 
-The application reads and writes the running `FF8_EN.exe` process through Win32 APIs. It does not patch the executable on disk.
+The application opens the running `FF8_EN.exe` process with read-only access (`PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_VM_READ`) and only ever calls `ReadProcessMemory`. It cannot write to the game's memory, does not patch the executable on disk, and does not touch save files.
 
 The Electron renderer is isolated and sandboxed:
 
@@ -21,7 +21,7 @@ The Electron renderer is isolated and sandboxed:
 - `contextIsolation` and the Chromium sandbox are enabled
 - all Chromium permission requests are denied
 - production network requests and external navigation are blocked
-- the preload exposes only a small, typed FF8 IPC API
+- the preload exposes only a small, typed, read-only FF8 IPC API
 
 ## Requirements
 
@@ -55,6 +55,7 @@ Build output is written under `out/`:
 
 - Electron 44
 - SvelteKit 2 and Svelte 5
+- Tailwind CSS 4 for the FF1-style interface
 - Vite 8
 - TypeScript 7 for native `.ts` validation
 - Effect 4 RC for the process-watcher fiber lifecycle

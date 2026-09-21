@@ -1,39 +1,21 @@
 <script lang="ts">
-  import type { CharacterUpdate, TeamMember } from '$lib/types/game';
+  import type { TeamMember } from '$lib/types/game';
   import TeamCharacterStatusComponent from './TeamCharacterStatusComponent/TeamCharacterStatusComponent.svelte';
 
   interface Props {
     teamMembers: TeamMember[];
-    onTeamMemberChange: (name: string, data: CharacterUpdate) => void;
   }
 
-  let { teamMembers, onTeamMemberChange }: Props = $props();
-  const editableTeamMembers = $derived(teamMembers.filter((member) => member.isAvailable));
+  let { teamMembers }: Props = $props();
+  const availableTeamMembers = $derived(teamMembers.filter((member) => member.isAvailable));
 </script>
 
-<team-status>
-  <team-member-list>
-    {#each editableTeamMembers as teamMember (teamMember.id)}
-      <TeamCharacterStatusComponent
-        character={structuredClone(teamMember)}
-        onTeamCharacterStatusChange={onTeamMemberChange}
-      />
+<div class="flex min-h-0 flex-1 p-3">
+  <div
+    class="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto border-2 border-ff-border bg-ff-window p-2 [scrollbar-width:thin] [scrollbar-color:var(--color-ff-border)_var(--color-ff-window-dark)]"
+  >
+    {#each availableTeamMembers as teamMember (teamMember.id)}
+      <TeamCharacterStatusComponent character={teamMember} />
     {/each}
-    {#each editableTeamMembers as teamMember (teamMember.id)}
-      <spacer aria-hidden="true"></spacer>
-    {/each}
-  </team-member-list>
-</team-status>
-
-<style>
-  team-member-list {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-evenly;
-    padding: 20px;
-  }
-
-  spacer {
-    width: 336px;
-  }
-</style>
+  </div>
+</div>

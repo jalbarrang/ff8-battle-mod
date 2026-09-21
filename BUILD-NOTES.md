@@ -11,6 +11,7 @@ The memory addresses target the English 2013 Steam release running as `FF8_EN.ex
 - Electron 44.4.3
 - Electron Forge 7.11.2
 - SvelteKit 2.70.3 / Svelte 5.57.1 / Vite 8.3.0
+- Tailwind CSS 4.3.3 through `@tailwindcss/vite`, themed as an NES-era FF1 interface
 - Effect 4.0.0-rc.116, pinned because v4 is not yet generally available
 - Koffi 3.3.1
 
@@ -33,8 +34,9 @@ The old `memoryjs` dependency was removed. `src/main/ff8/memory.ts` calls these 
 - `Process32FirstW` / `Process32NextW`
 - `OpenProcess`
 - `ReadProcessMemory`
-- `WriteProcessMemory`
 - `CloseHandle`
+
+The process is opened with `PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_VM_READ` only. The fork is read-only: there is no `WriteProcessMemory` binding, no write path in the watcher, and no renderer IPC that could modify the game.
 
 Koffi and `@koromix/koffi-win32-x64` are explicitly retained and unpacked from ASAR by `forge.config.cjs`.
 
@@ -69,4 +71,4 @@ pnpm make
 - Packaged Electron app: launched from ASAR with Koffi's native binary present
 - Renderer smoke test: expected process-search screen rendered with production styles and no console errors
 
-A live FF8 process was not available during migration, so final read/write validation against the game still needs an in-battle smoke test.
+Live validation against the 2013 Steam `FF8_EN.exe` was completed in battle: enemy names/HP/KO state, party battle slots, and the `mode_StateGlobal` battle flag (3 while fighting, back to 1/2 afterwards) all read correctly, and the renderer displayed live enemy HP with Card capture odds and no console errors.

@@ -54,28 +54,23 @@ export class Ff8ProcessWatcher {
     this.disconnect();
   }
 
-  updateGameValue(propertyName: string, value: MemoryValue): void {
-    if (!this.process) return;
+  /**
+   * Re-sends the current process status and every known game value. A renderer
+   * that mounts after the watcher has already connected (a reload, or a window
+   * recreated by `activate`) would otherwise never receive the initial
+   * snapshot, because deltas are only emitted when a value changes.
+   */
+  publishSnapshot(): void {
+    this.callbacks.onStatus(this.process ? 'connected' : 'searching');
 
-    const entry = memoryAddressConfig[propertyName];
-    if (!entry) throw new Error(`Unknown game value: ${propertyName}`);
-
-    try {
-      const previousValues = entry.locations.map((location) => this.readLocation(location));
-      const nextValues = entry.valueTransformerIn(value, previousValues);
-      entry.locations.forEach((location, index) => {
-        const valueToWrite = nextValues[index];
-        const targetAddress = this.resolveAddress(location);
-        if (location.type === 'bytes') {
-          this.memory.writeBytes(this.process!, targetAddress, valueToWrite);
-        } else {
-          this.memory.write(this.process!, targetAddress, location.type, Number(valueToWrite));
-        }
-      });
-    } catch (error) {
-      this.callbacks.onError(error);
-      this.disconnect();
+    const deltas: GameValueDeltas = {};
+    for (const [propertyName, values] of this.gameValues) {
+      const transformer = memoryAddressConfig[propertyName]?.valueTransformerOut;
+      if (!transformer) continue;
+      deltas[propertyName] = { prevVal: null, newVal: transformer(values) };
     }
+
+    if (Object.keys(deltas).length > 0) this.callbacks.onDeltas(deltas);
   }
 
   private watchLoop(): Effect.Effect<void> {

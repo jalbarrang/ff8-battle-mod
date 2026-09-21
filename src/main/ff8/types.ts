@@ -13,9 +13,10 @@ export interface MemoryLocation {
 export interface MemoryAddressEntry {
   locations: MemoryLocation[];
   valueTransformerOut: ((values: MemoryValue[]) => MemoryValue) | null;
-  valueTransformerIn: (value: MemoryValue, previousValues: MemoryValue[]) => MemoryValue[];
 }
 
+// The memory map is read-only: every entry describes how to decode game state,
+// never how to encode it back into the process.
 export type MemoryAddressConfig = Record<string, MemoryAddressEntry>;
 
 export interface GameValueDelta {

@@ -1,26 +1,16 @@
 <script lang="ts">
   import magicSpells from '$lib/magic-spells';
-  import type { CharacterUpdate, TeamMember } from '$lib/types/game';
-  import NumericInput from '../../NumericInput.svelte';
+  import { portraitUrl } from '$lib/portraits';
+  import type { TeamMember } from '$lib/types/game';
 
   interface Props {
     character: TeamMember;
-    onTeamCharacterStatusChange?: (name: string, data: CharacterUpdate) => void;
   }
 
-  let {
-    character: sourceCharacter,
-    onTeamCharacterStatusChange = () => undefined
-  }: Props = $props();
+  let { character }: Props = $props();
 
-  let character = $state<TeamMember>({ id: -1, name: '' });
-  let propertyToEdit = $state<'currentHealth' | 'currentLevel' | null>(null);
-  let newValue = $state(0);
-
-  $effect(() => {
-    character = structuredClone(sourceCharacter);
-  });
-
+  const name = $derived(character.displayName || character.name);
+  const portrait = $derived(portraitUrl(name));
   const maxHealth = $derived(calculateMaxHealth(character));
 
   function calculateMaxHealth(target: TeamMember): number {
@@ -39,179 +29,33 @@
     );
   }
 
-  function onEditClick(propertyName: 'currentHealth' | 'currentLevel' | 'maxHealth'): void {
-    if (propertyName === 'maxHealth') {
-      window.alert("Cannot edit because this is calculated by the character's level");
-      return;
-    }
-    propertyToEdit = propertyName;
-    newValue = character[propertyName] ?? 0;
-  }
-
-  function onInputKeydown(event: KeyboardEvent): void {
-    if (event.key === 'Enter') onConfirmClick();
-    else if (event.key === 'Escape') onCancelClick();
-  }
-
-  function onConfirmClick(): void {
-    if (!propertyToEdit) return;
-    const maximum = propertyToEdit === 'currentHealth' ? maxHealth : newValue;
-    const boundedValue = Math.min(newValue, maximum);
-    onTeamCharacterStatusChange(character.name, { [propertyToEdit]: boundedValue });
-    onCancelClick();
-  }
-
-  function onCancelClick(): void {
-    propertyToEdit = null;
-    newValue = 0;
-  }
-
-  function onMagicChange(): void {
-    onTeamCharacterStatusChange(character.name, {
-      magic: structuredClone(character.magic ?? [])
-    });
-  }
+  const spellName = (spellId: number): string =>
+    magicSpells.find((spell) => spell.id === spellId)?.name ?? 'None';
 </script>
 
-<character-status>
-  <portrait style={`background-image: url('./images/${character.name}.png')`}></portrait>
-  <status-panel>
-    <statline>
-      <character-name>{character.displayName || character.name}</character-name>
-    </statline>
-    <statline>
-      <stat-name>Level:</stat-name>
-      <button class="stat" onclick={() => onEditClick('currentLevel')}>{character.currentLevel ?? 0}</button>
-      <stat-name>Health:</stat-name>
-      <button class="stat health" onclick={() => onEditClick('currentHealth')}
-        >{character.currentHealth ?? 0}</button
-      >
-      <stat-separator>/</stat-separator>
-      <button class="stat health" onclick={() => onEditClick('maxHealth')}>{maxHealth}</button>
-    </statline>
-    <statline>
-      <magic-editor>
-        {#each character.magic ?? [] as magicSlot}
-          <magic-slot>
-            <select
-              value={magicSlot[0]}
-              onchange={(event) => {
-                magicSlot[0] = Number(event.currentTarget.value);
-                onMagicChange();
-              }}
-              aria-label="Magic spell"
-            >
-              {#each magicSpells as spell}
-                <option value={spell.id}>{spell.name}</option>
-              {/each}
-            </select>
-            <NumericInput min={0} max={100} bind:value={magicSlot[1]} onChange={onMagicChange} />
-          </magic-slot>
-        {/each}
-      </magic-editor>
-    </statline>
-  </status-panel>
-  {#if propertyToEdit}
-    <div class="property-edit-panel">
-      <NumericInput bind:value={newValue} onKeydown={onInputKeydown} onInit={(input) => input.select()} />
-      <button onclick={onConfirmClick}>Confirm</button>
-      <button onclick={onCancelClick}>Cancel</button>
-    </div>
+<div class="flex items-start gap-3">
+  {#if portrait}
+    <img src={portrait} alt="" class="h-24 w-auto shrink-0 border border-ff-border/60" />
   {/if}
-</character-status>
-
-<style>
-  character-status {
-    display: flex;
-    font-weight: 500;
-    margin: 10px 15px;
-  }
-
-  portrait {
-    background-repeat: no-repeat;
-    background-size: 100% auto;
-    width: 88px;
-    margin-right: 14px;
-  }
-
-  character-name {
-    width: 66px;
-    font-size: 19px;
-  }
-
-  status-panel {
-    display: flex;
-    flex-direction: column;
-    margin-top: 3px;
-  }
-
-  statline {
-    display: flex;
-  }
-
-  stat-name {
-    margin-right: 10px;
-    font-size: 15px;
-    font-weight: 500;
-  }
-
-  .stat {
-    cursor: pointer;
-    text-decoration: underline;
-    color: inherit;
-    background: none;
-    border: 0;
-    padding: 0;
-    text-shadow: inherit;
-    font-weight: 600;
-    font-size: 16px;
-    margin-right: 10px;
-    width: 24px;
-  }
-
-  .stat.health {
-    width: 38px;
-    text-align: right;
-    margin: 0;
-  }
-
-  stat-separator {
-    padding: 0 4px;
-    font-weight: 400;
-    font-size: 16px;
-  }
-
-  magic-editor {
-    display: flex;
-    flex-direction: column;
-    height: 105px;
-    margin-top: 4px;
-    overflow-y: scroll;
-    border: 1px inset;
-    flex-grow: 1;
-  }
-
-  magic-slot {
-    display: flex;
-  }
-
-  magic-slot select {
-    flex-grow: 1;
-    margin-right: 2px;
-  }
-
-  magic-slot :global(input) {
-    width: 45px;
-    margin-right: 2px;
-  }
-
-  .property-edit-panel {
-    display: flex;
-    position: absolute;
-    left: 107px;
-  }
-
-  .property-edit-panel :global(input) {
-    width: 82px;
-  }
-</style>
+  <div class="flex min-w-0 flex-1 flex-col gap-1">
+    <div class="flex flex-wrap items-baseline gap-x-3 text-sm">
+      <span class="truncate font-bold">{name}</span>
+      <span class="text-xs tabular-nums">
+        <span class="text-ff-label">LV</span>
+        {character.currentLevel ?? 0}
+        <span class="text-ff-label ml-2">HP</span>
+        {character.currentHealth ?? 0}<span class="text-ff-label">/</span>{maxHealth}
+      </span>
+    </div>
+    <div
+      class="max-h-24 w-full max-w-sm overflow-y-auto border border-ff-border/40 bg-ff-window-dark p-1 [scrollbar-width:thin] [scrollbar-color:var(--color-ff-border)_var(--color-ff-window-dark)]"
+    >
+      {#each character.magic ?? [] as magicSlot}
+        <div class="flex justify-between gap-2 text-[11px] leading-[15px]">
+          <span class="truncate">{spellName(magicSlot[0])}</span>
+          <span class="tabular-nums">{magicSlot[1]}</span>
+        </div>
+      {/each}
+    </div>
+  </div>
+</div>

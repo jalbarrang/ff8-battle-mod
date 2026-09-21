@@ -1,11 +1,11 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
-import type { Ff8Api, GameValue, GameValueDeltas } from '../lib/types/game';
+import type { Ff8Api, GameValueDeltas } from '../lib/types/game';
 
 const IPC = {
   deltas: 'ff8:game-values-updated',
   processStatus: 'ff8:process-status-changed',
-  update: 'ff8:update-game-value'
+  snapshot: 'ff8:request-snapshot'
 } as const;
 
 const api: Ff8Api = {
@@ -24,8 +24,8 @@ const api: Ff8Api = {
     return () => ipcRenderer.removeListener(IPC.processStatus, listener);
   },
 
-  updateGameValue(propertyName: string, value: GameValue): void {
-    ipcRenderer.send(IPC.update, propertyName, value);
+  requestSnapshot(): void {
+    ipcRenderer.send(IPC.snapshot);
   }
 };
 

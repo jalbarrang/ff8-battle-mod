@@ -1,116 +1,47 @@
 <script lang="ts">
-  import type { BattleCharacter, CharacterUpdate } from '$lib/types/game';
-  import NumericInput from '../../NumericInput.svelte';
+  import { cardSuccessChance } from '$lib/card';
+  import { portraitUrl } from '$lib/portraits';
+  import type { BattleCharacter } from '$lib/types/game';
 
   interface Props {
     character: BattleCharacter;
-    onBattleCharacterStatusChange?: (id: number, data: CharacterUpdate) => void;
+    showCardChance?: boolean;
+    side?: 'enemy' | 'party';
   }
 
-  let {
-    character,
-    onBattleCharacterStatusChange = () => undefined
-  }: Props = $props();
+  let { character, showCardChance = false, side = 'enemy' }: Props = $props();
 
-  let propertyToEdit = $state<'currentHealth' | 'maxHealth' | null>(null);
-  let newValue = $state(0);
-
+  const name = $derived(character.displayName || character.name);
+  const portrait = $derived(portraitUrl(name));
   const currentHealth = $derived(character.isDead ? 0 : (character.currentHealth ?? 0));
   const maxHealth = $derived(character.isDead ? 0 : (character.maxHealth ?? 0));
-
-  function onEditClick(propertyName: 'currentHealth' | 'maxHealth'): void {
-    if (character.isDead) {
-      window.alert("Cannot edit because the character is KO'd");
-      return;
-    }
-    propertyToEdit = propertyName;
-    newValue = character[propertyName] ?? 0;
-  }
-
-  function onInputKeydown(event: KeyboardEvent): void {
-    if (event.key === 'Enter') onConfirmClick();
-    else if (event.key === 'Escape') onCancelClick();
-  }
-
-  function onConfirmClick(): void {
-    if (!propertyToEdit) return;
-    const maximum = propertyToEdit === 'currentHealth' ? (character.maxHealth ?? newValue) : newValue;
-    const boundedValue = Math.min(newValue, maximum);
-    const data: CharacterUpdate = { [propertyToEdit]: boundedValue };
-    if (propertyToEdit === 'maxHealth' && boundedValue < (character.currentHealth ?? 0)) {
-      data.currentHealth = boundedValue;
-    }
-    onBattleCharacterStatusChange(character.id, data);
-    onCancelClick();
-  }
-
-  function onCancelClick(): void {
-    propertyToEdit = null;
-    newValue = 0;
-  }
+  const cardChance = $derived(
+    showCardChance && !character.isDead ? cardSuccessChance(currentHealth, maxHealth) : null
+  );
+  const facingParty = $derived(side === 'party');
+  const oddsColour = $derived(
+    cardChance === null ? '' : cardChance >= 0.9 ? 'text-ff-good' : cardChance < 0.5 ? 'text-ff-bad' : 'text-ff-warn'
+  );
 </script>
 
-<character-status>
-  <character-name>{character.displayName || character.name}:</character-name>
-  <statline>
-    <button class="stat" onclick={() => onEditClick('currentHealth')}>{currentHealth}</button>
-    <stat-separator>/</stat-separator>
-    <button class="stat" onclick={() => onEditClick('maxHealth')}>{maxHealth}</button>
-  </statline>
-  {#if propertyToEdit}
-    <div class="property-edit-panel">
-      <NumericInput bind:value={newValue} onKeydown={onInputKeydown} onInit={(input) => input.select()} />
-      <button onclick={onConfirmClick}>Confirm</button>
-      <button onclick={onCancelClick}>Cancel</button>
+<div class="flex flex-col gap-0.5">
+  <div class="flex items-center gap-2" class:flex-row-reverse={facingParty}>
+    {#if portrait}
+      <img src={portrait} alt="" class="h-10 w-auto shrink-0 border border-ff-border/60" />
+    {/if}
+    <div class="flex flex-1 items-baseline justify-between gap-2" class:flex-row-reverse={facingParty}>
+      <span class="truncate text-sm font-bold">{name}</span>
+      <span class="shrink-0 text-sm tabular-nums">
+        {currentHealth}<span class="text-ff-label">/</span>{maxHealth}
+      </span>
     </div>
+  </div>
+  {#if cardChance !== null}
+    <span
+      class="text-right text-[10px] leading-none {oddsColour}"
+      title={`Card capture roll: ${(cardChance * 100).toFixed(1)}% (succeeds when 256 - 255 x HP/maxHP >= rand 0..255)`}
+    >
+      Card {Math.round(cardChance * 100)}%
+    </span>
   {/if}
-</character-status>
-
-<style>
-  character-status {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 20px;
-    font-weight: bold;
-  }
-
-  character-name {
-    padding-right: 15px;
-    font-size: 19px;
-  }
-
-  statline {
-    display: flex;
-  }
-
-  .stat {
-    cursor: pointer;
-    text-decoration: underline;
-    color: inherit;
-    background: none;
-    border: 0;
-    padding: 0;
-    font-weight: 600;
-    font-size: 16px;
-    width: 63px;
-    text-align: right;
-    text-shadow: inherit;
-  }
-
-  stat-separator {
-    padding: 0 4px;
-    font-weight: 400;
-    font-size: 16px;
-  }
-
-  .property-edit-panel {
-    display: flex;
-    position: absolute;
-    left: 107px;
-  }
-
-  .property-edit-panel :global(input) {
-    width: 82px;
-  }
-</style>
+</div>

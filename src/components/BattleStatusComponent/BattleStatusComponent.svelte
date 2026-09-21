@@ -1,85 +1,28 @@
 <script lang="ts">
-  import type { BattleCharacter, CharacterUpdate } from '$lib/types/game';
+  import type { BattleCharacter } from '$lib/types/game';
   import BattleCharacterStatusComponent from './BattleCharacterStatusComponent/BattleCharacterStatusComponent.svelte';
 
   interface Props {
     enemies: BattleCharacter[];
     partyMembers: BattleCharacter[];
-    enemyAttacksEnabled: boolean;
-    onEnemyChange: (id: number, data: CharacterUpdate) => void;
-    onPartyMemberChange: (id: number, data: CharacterUpdate) => void;
-    onKillAllEnemiesClick: () => void;
-    onDisableEnableEnemyAttacksClick: () => void;
-    onDamageAllEnemiesClick: () => void;
-    onCureAllPartyMembersClick: () => void;
   }
 
-  let {
-    enemies,
-    partyMembers,
-    enemyAttacksEnabled,
-    onEnemyChange,
-    onPartyMemberChange,
-    onKillAllEnemiesClick,
-    onDisableEnableEnemyAttacksClick,
-    onDamageAllEnemiesClick,
-    onCureAllPartyMembersClick
-  }: Props = $props();
+  let { enemies, partyMembers }: Props = $props();
+
+  const column =
+    'flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto border-2 border-ff-border bg-ff-window p-2 ' +
+    '[scrollbar-width:thin] [scrollbar-color:var(--color-ff-border)_var(--color-ff-window-dark)]';
 </script>
 
-<battle-status>
-  <enemy-list>
+<div class="flex min-h-0 flex-1 gap-3 p-3">
+  <div class={column}>
     {#each enemies as enemy (enemy.id)}
-      <BattleCharacterStatusComponent character={enemy} onBattleCharacterStatusChange={onEnemyChange} />
+      <BattleCharacterStatusComponent character={enemy} showCardChance />
     {/each}
-    <button-panel>
-      <button onclick={onKillAllEnemiesClick}>Kill All</button>
-      <button onclick={onDisableEnableEnemyAttacksClick}
-        >{enemyAttacksEnabled ? 'Disable' : 'Enable'} Attacks</button
-      >
-      <button onclick={onDamageAllEnemiesClick}>Damage All</button>
-    </button-panel>
-  </enemy-list>
-  <party-member-list>
+  </div>
+  <div class={column}>
     {#each partyMembers as partyMember (partyMember.id)}
-      <BattleCharacterStatusComponent
-        character={partyMember}
-        onBattleCharacterStatusChange={onPartyMemberChange}
-      />
+      <BattleCharacterStatusComponent character={partyMember} side="party" />
     {/each}
-    <button-panel>
-      <button onclick={onCureAllPartyMembersClick}>Cure All</button>
-    </button-panel>
-  </party-member-list>
-</battle-status>
-
-<style>
-  enemy-list,
-  party-member-list {
-    display: inline-flex;
-    flex-direction: column;
-    width: 237px;
-  }
-
-  party-member-list {
-    margin-left: 30px;
-  }
-
-  button-panel {
-    display: flex;
-    flex-wrap: wrap;
-    margin-top: 5px;
-    border-top: 1px solid;
-  }
-
-  button-panel button {
-    text-decoration: underline;
-    border: none;
-    background: none;
-    font-weight: 600;
-    font-size: 14px;
-    padding: 0 10px 0 0;
-    margin: 0;
-    cursor: pointer;
-  }
-</style>
+  </div>
+</div>

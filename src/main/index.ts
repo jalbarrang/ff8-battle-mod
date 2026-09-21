@@ -9,9 +9,18 @@ import { Ff8ProcessWatcher } from './ff8/watcher';
 const IPC = {
   deltas: 'ff8:game-values-updated',
   processStatus: 'ff8:process-status-changed',
-  update: 'ff8:update-game-value'
+  snapshot: 'ff8:request-snapshot'
 } as const;
 const devServerUrl = process.env.VITE_DEV_SERVER_URL;
+
+// Opt-in renderer DevTools protocol for local inspection, e.g. in PowerShell:
+//   $env:FF8_DEBUG_PORT=9222; pnpm dev
+// Electron Forge's `start` does not forward extra CLI flags to Chromium, so the
+// port has to be registered from inside the main process.
+const debuggingPort = process.env.FF8_DEBUG_PORT;
+if (debuggingPort && /^\d+$/.test(debuggingPort)) {
+  app.commandLine.appendSwitch('remote-debugging-port', debuggingPort);
+}
 
 interface WindowState {
   height?: number;
@@ -86,7 +95,6 @@ async function createWindow(): Promise<void> {
     minWidth: 320,
     minHeight: 160,
     title: 'FF8 Battle HP',
-    alwaysOnTop: true,
     autoHideMenuBar: true,
     backgroundColor: '#000000',
     webPreferences: {
@@ -99,7 +107,6 @@ async function createWindow(): Promise<void> {
     }
   });
 
-  mainWindow.setAlwaysOnTop(true, 'screen-saver');
   mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   mainWindow.webContents.on('will-navigate', (event, url) => {
     if (!devServerUrl || !isAllowedRequest(url)) event.preventDefault();
@@ -113,9 +120,11 @@ async function createWindow(): Promise<void> {
   else await mainWindow.loadFile(path.join(app.getAppPath(), 'build', 'index.html'));
 }
 
-ipcMain.on(IPC.update, (_event, propertyName: unknown, value: unknown) => {
-  if (typeof propertyName !== 'string') return;
-  watcher.updateGameValue(propertyName, value);
+// Read-only resync: a renderer that mounts after the watcher connected asks for
+// the current status and values, which are otherwise only pushed on change.
+ipcMain.on(IPC.snapshot, (event) => {
+  if (event.sender !== mainWindow?.webContents) return;
+  watcher.publishSnapshot();
 });
 
 app.whenReady().then(async () => {

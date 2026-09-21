@@ -1,17 +1,11 @@
 import koffi, { type KoffiFunc } from 'koffi';
 
-import type { MemoryType, MemoryValue } from './types';
+import type { MemoryType } from './types';
 
 const TH32CS_SNAPPROCESS = 0x00000002;
-const PROCESS_VM_OPERATION = 0x0008;
 const PROCESS_VM_READ = 0x0010;
-const PROCESS_VM_WRITE = 0x0020;
 const PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
-const PROCESS_ACCESS =
-  PROCESS_QUERY_LIMITED_INFORMATION |
-  PROCESS_VM_OPERATION |
-  PROCESS_VM_READ |
-  PROCESS_VM_WRITE;
+const PROCESS_ACCESS = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_VM_READ;
 const INVALID_HANDLE_VALUE = BigInt.asUintN(64, -1n);
 
 const kernel32 = koffi.load('kernel32.dll');
@@ -75,15 +69,6 @@ const readProcessMemory = kernel32.func(
   output: Buffer,
   size: number,
   bytesRead: number[]
-) => boolean>;
-const writeProcessMemory = kernel32.func(
-  'bool __stdcall WriteProcessMemory(HANDLE hProcess, uintptr_t lpBaseAddress, const void *lpBuffer, size_t nSize, _Out_ size_t *lpNumberOfBytesWritten)'
-) as KoffiFunc<(
-  handle: NativeHandle,
-  address: number,
-  input: Buffer,
-  size: number,
-  bytesWritten: number[]
 ) => boolean>;
 const closeHandle = kernel32.func(
   '__stdcall',
@@ -156,24 +141,6 @@ export class WindowsProcessMemory {
       throw this.win32Error(`ReadProcessMemory(0x${address.toString(16)})`);
     }
     return [...output];
-  }
-
-  write(process: ProcessHandle, address: number, type: Exclude<MemoryType, 'bytes'>, value: number): void {
-    const buffer = type === 'int' ? Buffer.allocUnsafe(4) : type === 'short' ? Buffer.allocUnsafe(2) : Buffer.allocUnsafe(1);
-    if (type === 'int') buffer.writeInt32LE(value);
-    else if (type === 'short') buffer.writeInt16LE(value);
-    else buffer.writeUInt8(value & 0xff);
-    this.writeBytes(process, address, buffer);
-  }
-
-  writeBytes(process: ProcessHandle, address: number, values: MemoryValue): void {
-    if (!Array.isArray(values)) throw new TypeError('Byte writes require an array');
-    const input = Buffer.from(values);
-    const bytesWritten = [0];
-    const succeeded = writeProcessMemory(process.handle, address, input, input.length, bytesWritten);
-    if (!succeeded || bytesWritten[0] !== input.length) {
-      throw this.win32Error(`WriteProcessMemory(0x${address.toString(16)})`);
-    }
   }
 
   private win32Error(operation: string): Error {
