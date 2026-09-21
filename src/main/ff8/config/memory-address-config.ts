@@ -28,6 +28,10 @@ const memoryAddressConfig: MemoryAddressConfig = {
     valueTransformerOut: vals => vals[0] === 3,
   },
   // Enemy 1 (in battle)
+  // atbEnemy* is the enemy's ATB gauge: a 0..15 counter that steps up by one
+  // every battle tick, holds at 15 while the enemy waits its turn in the action
+  // queue, and resets to 0 once it acts. It also freezes mid-value whenever the
+  // battle pauses the ATB. Verified against the live 2013 Steam FF8_EN.exe.
   atbEnemy1: {
     locations: [{
       address:0x01D27D95,
@@ -35,7 +39,7 @@ const memoryAddressConfig: MemoryAddressConfig = {
       type: 'byte',
       size: null
     }],
-    valueTransformerOut: null,
+    valueTransformerOut: defaultValueTransformerOut,
   },
   currentHealthEnemy1: {
     locations: [{
@@ -294,7 +298,7 @@ const memoryAddressConfig: MemoryAddressConfig = {
       type: 'byte',
       size: null
     }],
-    valueTransformerOut: null,
+    valueTransformerOut: defaultValueTransformerOut,
   },
   currentHealthEnemy2: {
     locations: [{
@@ -553,7 +557,7 @@ const memoryAddressConfig: MemoryAddressConfig = {
       type: 'byte',
       size: null,
     }],
-    valueTransformerOut: null,
+    valueTransformerOut: defaultValueTransformerOut,
   },
   currentHealthEnemy3: {
     locations: [{
@@ -812,7 +816,7 @@ const memoryAddressConfig: MemoryAddressConfig = {
       type: 'byte',
       size: null,
     }],
-    valueTransformerOut: null,
+    valueTransformerOut: defaultValueTransformerOut,
   },
   currentHealthEnemy4: {
     locations: [{

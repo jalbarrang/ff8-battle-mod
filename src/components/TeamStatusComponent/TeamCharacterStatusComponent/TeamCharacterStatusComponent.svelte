@@ -28,9 +28,6 @@
       modifier2
     );
   }
-
-  const spellName = (spellId: number): string =>
-    magicSpells.find((spell) => spell.id === spellId)?.name ?? 'None';
 </script>
 
 <div class="flex items-start gap-3">
@@ -46,16 +43,6 @@
         <span class="text-ff-label ml-2">HP</span>
         {character.currentHealth ?? 0}<span class="text-ff-label">/</span>{maxHealth}
       </span>
-    </div>
-    <div
-      class="max-h-24 w-full max-w-sm overflow-y-auto border border-ff-border/40 bg-ff-window-dark p-1 [scrollbar-width:thin] [scrollbar-color:var(--color-ff-border)_var(--color-ff-window-dark)]"
-    >
-      {#each character.magic ?? [] as magicSlot}
-        <div class="flex justify-between gap-2 text-[11px] leading-[15px]">
-          <span class="truncate">{spellName(magicSlot[0])}</span>
-          <span class="tabular-nums">{magicSlot[1]}</span>
-        </div>
-      {/each}
     </div>
   </div>
 </div>
