@@ -50,6 +50,15 @@ const KERNEL_GF_SECTION_SIZE = 0x84;
 const KERNEL_GF_ABILITY_OFFSET = 0x1e;
 const GUARDIAN_ABILITY_SLOTS = 21;
 
+// Ability definitions: kernel.bin file offset 0x40E0 (0x01CF3E48 + 0x40E0) holds
+// all seven ability groups as one contiguous array of 116 8-byte entries, ids
+// 0-115 (junction, command, stat %, character, party, GF, menu). The AP needed
+// to learn an ability is the byte at entry+4.
+const KERNEL_ABILITY_BASE = 0x01CF7F28;
+const KERNEL_ABILITY_COUNT = 116;
+const KERNEL_ABILITY_STRIDE = 8;
+const KERNEL_ABILITY_AP_OFFSET = 4;
+
 // Odin/Gilgamesh/Phoenix possession and related story flags (SG_ODIN_ANGEL_-
 // GILGA_FLAG in ff8-speedruns/ff8-memory). 0x02 = possess Odin, 0x08 = possess
 // Gilgamesh, 0x04 = Phoenix called once.
@@ -82,12 +91,15 @@ const decodeGuardianStats = (values: MemoryValue[]): MemoryValue => {
 };
 
 // Joins the kernel ability list to each GF's AP bytes to report how much AP the
-// GF has accumulated toward the ability it is currently learning.
+// GF has accumulated toward the ability it is currently learning, and how much
+// that ability costs in total.
 const decodeGuardianLearning = (values: MemoryValue[]): MemoryValue => {
   const kernel = (values[0] ?? []) as number[];
   const records = (values[1] ?? []) as number[];
+  const abilities = (values[2] ?? []) as number[];
   if (kernel.length < GUARDIAN_COUNT * KERNEL_GF_SECTION_SIZE) return [];
   if (records.length < GUARDIAN_COUNT * GUARDIAN_ROSTER_STRIDE) return [];
+  const hasAbilityTable = abilities.length >= KERNEL_ABILITY_COUNT * KERNEL_ABILITY_STRIDE;
 
   return Array.from({ length: GUARDIAN_COUNT }, (_, index) => {
     const recordBase = index * GUARDIAN_ROSTER_STRIDE;
@@ -102,7 +114,13 @@ const decodeGuardianLearning = (values: MemoryValue[]): MemoryValue => {
       }
     }
 
-    return { learningSkillId, learningAp };
+    // 0 when the ability id falls outside the array (ids 116+ are not part of
+    // the vanilla data), which the renderer reads as "total unknown".
+    const learningApRequired = hasAbilityTable && learningSkillId < KERNEL_ABILITY_COUNT
+      ? abilities[learningSkillId * KERNEL_ABILITY_STRIDE + KERNEL_ABILITY_AP_OFFSET] ?? 0
+      : 0;
+
+    return { learningSkillId, learningAp, learningApRequired };
   });
 };
 
@@ -1949,6 +1967,11 @@ const memoryAddressConfig: MemoryAddressConfig = {
       offsets: [],
       type: 'bytes',
       size: GUARDIAN_COUNT * GUARDIAN_ROSTER_STRIDE,
+    }, {
+      address: KERNEL_ABILITY_BASE,
+      offsets: [],
+      type: 'bytes',
+      size: KERNEL_ABILITY_COUNT * KERNEL_ABILITY_STRIDE,
     }],
     valueTransformerOut: decodeGuardianLearning,
   },

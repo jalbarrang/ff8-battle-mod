@@ -124,7 +124,7 @@ The material is the period's material: flat two-dimensional plates, not photogra
 - One shadow in the whole system: hard, 5px, zero blur. The bevel does the edge work; the offset does the stacking.
 - Small black corner tabs name every panel — the world's signature device, and the only uppercase type.
 - Mixed case everywhere else, in a self-hosted condensed grotesque with tabular figures.
-- Two surface tiers only: a raised plate that holds live state, a recessed well for controls, troughs and empty slots.
+- Two surface tiers only: a raised plate that holds live state, a recessed well for controls, uncharged meters and empty slots.
 - Panes own their scrolling; the plate is the frame, the scroller is inside it.
 
 Confirmed anti-references. This must never resolve toward a modern SaaS dashboard (stat cards, soft radii, blurred elevation, chart furniture); toward NES pixel-art pastiche (the FF1 pastiche this replaced is precisely what it is not); toward glassmorphism (frosted panels, translucent blur); toward ornate fantasy RPG chrome (parchment, gold filigree, decorative corners); or toward mobile app card stacks (large radii, generous whitespace, stacked phone cards).
@@ -136,7 +136,7 @@ One grey family, four tones, two bevel edges, two inks, three signals. Every val
 ### Primary
 - **Plate Light** (`#5e5e5e`): the light end of every plate gradient, at the top-left where the bevel's light edge sits.
 - **Plate Dark** (`#3d3d3d`): the dark end, at the bottom-right. A plate is always this diagonal sweep, never a flat fill.
-- **Recess Black** (`#232323`): every recessed surface — gauge troughs, the item search field, list beds, the sort control's backing, and ATB cells that have not charged.
+- **Recess Black** (`#232323`): every recessed surface — ATB cells that have not charged, the item search field, list beds, the sort control's backing, and every empty-slot message.
 
 ### Neutral
 - **Field Black** (`#000000`): the field. It shows through every gutter, behind every plate, and inside the corner tabs that break a plate's top edge. The window's own background colour matches it, so the app has no seam with its frame.
@@ -146,8 +146,8 @@ One grey family, four tones, two bevel edges, two inks, three signals. Every val
 - **Dim Ink** (`#e2e2e2`): field labels (`HP`, `Level`, `Learning`), units, counts, secondary status text, and the `/` inside a health figure. A barely-relieved tier: at 5:1 even on the lightest plate tone, so it is legibility relief, not a colour tier. Hierarchy in this world is carried by size and weight first.
 
 ### Tertiary
-- **Signal Green** (`#35c948`): a Guardian's HP bar fill, a recruited special Guardian, and Card capture odds at 90% or better.
-- **Signal Amber** (`#f5b800`): a Guardian's EXP bar fill, the ability being learned, an uncharged-but-progressing ATB cell, the lit edge under the active tab and the active sort segment.
+- **Signal Green** (`#35c948`): a recruited special Guardian, Card capture odds at 90% or better, ATB cells once the meter is full, and the navigation lamp while FF8 is attached.
+- **Signal Amber** (`#f5b800`): the ability being learned, charged ATB cells before the meter is full, Card odds from 50–89%, the lamp while the watcher is still searching, the lit edge under the active tab, the active sort segment, the caret and the focus ring.
 - **Signal Red** (`#f04a2a`): a battle in progress, a lost special Guardian, and Card odds below 50%.
 
 ### Named Rules
@@ -191,11 +191,11 @@ The window is the layout. Default 540x360, minimum 320x160, resizable, size pers
 
 Inside the main region, screens are vertical stacks with a 12px gutter (`p-3`) and 12px gaps between plates. Every screen opens with a chrome strip — a gradient bar carrying the screen's name on the left and its count on the right — and each of its groups opens with a second, thinner strip. Within a plate, padding drops to 8px and inner rows tighten to 4px or 2px. That is the whole rhythm: 2, 4, 6, 8, 12, 24.
 
-Two surface tiers carry the structure. A **plate** is raised: gradient fill, two-colour bevel, 5px hard offset, and a black corner tab straddling its top edge. A **well** is recessed: flat `#232323`, inverted bevel, no offset. Plates hold live state; wells hold controls, gauge troughs, list beds and empty slots. Nothing else is a container.
+Two surface tiers carry the structure. A **plate** is raised: gradient fill, two-colour bevel, 5px hard offset, and a black corner tab straddling its top edge. A **well** is recessed: flat `#232323`, inverted bevel, no offset. Plates hold live state; wells hold controls, ATB cells, list beds and empty slots. Nothing else is a container.
 
 **The plate is the frame and the scroller is inside it.** A plate that scrolls must put its scroll container in an inner element, or the corner tab straddling the top edge gets clipped by the overflow. Scrolling is always delegated: the window and the main region are `overflow-hidden`, and each pane that can grow owns its own `overflow-y-auto` with a thin scrollbar (`#949494` thumb on `#232323`). A scrollbar at the window edge would mean the layout had failed.
 
-Two-column grids (`sm:grid-cols-2` at 640px) exist in the party, Guardian and item grids but are dormant at the default 540px: design for one column, treat the second as a bonus, never as the composition.
+The Guardian grids climb a column ladder as the window widens — `sm:grid-cols-2` at 640px, `xl:grid-cols-3` at 1280px, `2xl:grid-cols-4` at 1536px; the party and item grids are still one column. All of it is dormant at the default 540px: design for one column, treat the extra columns as a bonus, never as the composition.
 
 ### Named Rules
 **The No Page Scroll Rule.** The window never scrolls. Only a nameable pane does. If content overflows the window, the fix is a pane, not a scrollbar on `<body>`.
@@ -212,12 +212,12 @@ Depth is otherwise entirely structural: the bevel says raised, the inverted beve
 
 ## Shapes
 
-Hard rectangles, no exceptions beyond a single dot. `border-radius: 0` is the form language: plates, wells, bars, tabs, fields, gauge troughs, ATB cells and item rows are all square-cornered.
+Hard rectangles, no exceptions beyond a single dot. `border-radius: 0` is the form language: plates, wells, tabs, fields, ATB cells and item rows are all square-cornered.
 
 Edges do the work that radius and blurred shadow do elsewhere, in a strict hierarchy:
 - **2px two-colour bevel** — every plate and well, light `#949494` on top/left and dark `#1c1c1c` on bottom/right (inverted for wells).
 - **2px dark rule** — the bottom edge of a chrome bar, and the divider between item rows.
-- **1px dark rule** — inner detail: portraits inside plates, gauge troughs, ATB cells.
+- **1px dark rule** — inner detail: portraits inside plates and ATB cells.
 - **Gradient sweep** — 135deg from Plate Light to Plate Dark on every raised surface, so any two plates agree about where the light is.
 
 The single exception: a 6px lamp. `border-radius: 9999px` for the round status lamps (connection, battle in progress), square for the odds marker. It is the only curve in the interface, which is why it reads as a lamp.
@@ -228,7 +228,7 @@ The single exception: a 6px lamp. `border-radius: 9999px` for the round status l
 The primary surface: `linear-gradient(135deg, #5e5e5e, #3d3d3d)`, a 2px two-colour bevel, `box-shadow: 5px 5px 0 #000`, 8px padding, `position: relative` so its corner tab can straddle the top edge.
 
 ### Well
-The recess: flat `#232323`, 2px bevel with the light and dark edges swapped, no shadow. Used for gauge troughs, the search field, the sort control's backing, list beds and every empty-slot message.
+The recess: flat `#232323`, 2px bevel with the light and dark edges swapped, no shadow. Used for ATB cells, the search field, the sort control's backing, list beds and every empty-slot message.
 
 ### Corner Tab (signature)
 An absolutely positioned black label at `top: -8px; left: 8px`, 11px uppercase, `letter-spacing: 0.08em`, 4px horizontal padding, background Field Black. It straddles the plate's top edge and interrupts its top bevel, naming the panel the way FF8's `STATUS`, `HELP`, `GF` and `COMMAND` tabs do. Every plate in the app carries one: `Status` on party members, `Enemy` and `Party` on the battle columns, `GF` on Guardians, `Inventory` on the item ledger, and `Odin`/`Gilgamesh` on the special cards.
@@ -259,7 +259,7 @@ A right-aligned 12px line, white, reading `Card 87%`, preceded by a 6px lamp in 
 8px padding on a plate. A 48px portrait (1px dark rule), the name at 16px bold, `Lv n` at 12px dim right-aligned on the same baseline, and beneath it a wrapping row of tight label/value pairs at 12px — `HP 2446  EXP 7812  Magic 22` — labels in dim ink, values white and tabular. A member standing by is the same content on a well instead of a plate: the two-tier surface model, not greyed-out text, is how the active party is separated from the roster.
 
 ### Guardian Force Card
-A 64px portrait, a 16px bold name, derived `Lv n` at 12px dim, then labelled rows at 12px. HP and EXP each carry a full-width recessed trough (2px well, 8px tall) filled with Signal Green and Signal Amber respectively, the fill a percentage of the trough's width. The `Learning` row reports the ability in white beside a 6px amber lamp with its accumulated AP in dim ink. An unobtained Guardian is a well whose portrait is `opacity-40 grayscale`, with "Not obtained" in dim ink.
+A 64px portrait, a 16px bold name, derived `Lv n` at 12px dim, then labelled rows at 12px. The card carries no gauges: HP is a plain `current / max` figure, and under the total `EXP` figure sits a second `XP to Next level` row reporting what the current level still costs, `—` at the level cap. The `Learning` row reports the ability in white beside a 6px amber lamp, with its progress as `collected / required AP` in dim ink — the total read from the kernel ability table, so a modded AP cost shows up here too. An unobtained Guardian is a well whose portrait is `opacity-40 grayscale`, with "Not obtained" in dim ink.
 
 ### Item Ledger
 One plate holding every row, divided by 1px dark rules — a console inventory, not a stack of cards. Rows are 12px, 4px/8px padding, name truncated with an ellipsis, quantity as `×n` in dim ink, tabular, at the right edge, with a Plate Light wash at 40% on hover.

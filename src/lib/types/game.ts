@@ -17,6 +17,8 @@ export interface GuardianStatsEntry {
 export interface GuardianLearningEntry {
   learningSkillId: number;
   learningAp: number;
+  /** Total AP the ability costs, 0 when the id is outside the kernel ability table. */
+  learningApRequired: number;
 }
 
 export interface GuardianSpecialFlags {
@@ -70,6 +72,7 @@ export interface GuardianForce {
   unlocked: boolean;
   learningSkillId: number;
   learningAp: number;
+  learningApRequired: number;
   currentHealth: number;
   maxHealth: number;
   exp: number;

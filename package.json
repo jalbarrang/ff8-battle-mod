@@ -54,6 +54,7 @@
     "cross-env": "10.1.0",
     "electron": "44.4.3",
     "eslint": "10.11.0",
+    "point-to-svelte": "^0.2.0",
     "svelte": "5.57.1",
     "svelte-check": "4.7.6",
     "svelte-eslint-parser": "1.8.1",

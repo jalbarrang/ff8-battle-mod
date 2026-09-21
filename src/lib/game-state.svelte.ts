@@ -84,6 +84,7 @@ const guardians = $derived.by((): GuardianForce[] =>
     unlocked: guardianRoster[id]?.unlocked ?? false,
     learningSkillId: guardianRoster[id]?.learningSkillId ?? 0,
     learningAp: guardianLearning[id]?.learningAp ?? 0,
+    learningApRequired: guardianLearning[id]?.learningApRequired ?? 0,
     currentHealth: guardianStats[id]?.currentHealth ?? 0,
     maxHealth: guardianStats[id]?.maxHealth ?? 0,
     exp: guardianStats[id]?.exp ?? 0
