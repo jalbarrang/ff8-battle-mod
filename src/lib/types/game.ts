@@ -12,6 +12,8 @@ export interface Character {
 
 export interface BattleCharacter extends Character {
   atb?: number;
+  currentExp?: number;
+  currentLevel?: number;
   hasPoisonWithoutAnimation?: boolean;
   teamMemberId?: number;
 }

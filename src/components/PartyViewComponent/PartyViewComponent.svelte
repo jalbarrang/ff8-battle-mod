@@ -3,11 +3,15 @@
   import BattleCharacterStatusComponent from './BattleCharacterStatusComponent/BattleCharacterStatusComponent.svelte';
 
   interface Props {
+    /** Enemy battle slots. Empty while out of battle. */
     enemies: BattleCharacter[];
-    partyMembers: BattleCharacter[];
+    /** The three battle-party slots, joined with team-member level/EXP data. */
+    party: BattleCharacter[];
+    /** EXP only has meaning on the field, so it is hidden during a fight. */
+    battleStarted: boolean;
   }
 
-  let { enemies, partyMembers }: Props = $props();
+  let { enemies, party, battleStarted }: Props = $props();
 
   const column =
     'flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto border-2 border-ff-border bg-ff-window p-2 ' +
@@ -21,8 +25,13 @@
     {/each}
   </div>
   <div class={column}>
-    {#each partyMembers as partyMember (partyMember.id)}
-      <BattleCharacterStatusComponent character={partyMember} side="party" />
+    {#each party as member (member.id)}
+      <BattleCharacterStatusComponent
+        character={member}
+        side="party"
+        showLevel
+        showExp={!battleStarted}
+      />
     {/each}
   </div>
 </div>

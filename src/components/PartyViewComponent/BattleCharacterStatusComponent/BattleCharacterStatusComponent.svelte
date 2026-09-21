@@ -6,10 +6,18 @@
   interface Props {
     character: BattleCharacter;
     showCardChance?: boolean;
+    showExp?: boolean;
+    showLevel?: boolean;
     side?: 'enemy' | 'party';
   }
 
-  let { character, showCardChance = false, side = 'enemy' }: Props = $props();
+  let {
+    character,
+    showCardChance = false,
+    showExp = false,
+    showLevel = false,
+    side = 'enemy'
+  }: Props = $props();
 
   const name = $derived(character.displayName || character.name);
   const portrait = $derived(portraitUrl(name));
@@ -43,7 +51,12 @@
       <img src={portrait} alt="" class="h-10 w-auto shrink-0 border border-ff-border/60" />
     {/if}
     <div class="flex flex-1 items-baseline justify-between gap-2" class:flex-row-reverse={facingParty}>
-      <span class="truncate text-sm font-bold">{name}</span>
+      <span class="flex min-w-0 items-baseline gap-1.5">
+        <span class="truncate text-sm font-bold">{name}</span>
+        {#if showLevel && character.currentLevel !== undefined}
+          <span class="shrink-0 text-[10px] leading-none text-ff-label">LV {character.currentLevel}</span>
+        {/if}
+      </span>
       <span class="shrink-0 text-sm tabular-nums">
         {currentHealth}<span class="text-ff-label">/</span>{maxHealth}
       </span>
@@ -76,6 +89,15 @@
       title={`Card capture roll: ${(cardChance * 100).toFixed(1)}% (succeeds when 256 - 255 x HP/maxHP >= rand 0..255)`}
     >
       Card {Math.round(cardChance * 100)}%
+    </span>
+  {/if}
+  {#if showExp && character.currentExp !== undefined}
+    <span
+      class="text-[10px] leading-none text-ff-label"
+      class:text-right={!facingParty}
+      title={`Experience ${character.currentExp}`}
+    >
+      EXP {character.currentExp}
     </span>
   {/if}
 </div>

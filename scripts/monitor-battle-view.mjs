@@ -11,24 +11,23 @@ const PORTS = (process.argv[2] ?? '9222').split(',');
 const DURATION_S = Number(process.argv[3] ?? 120);
 
 const PROBE = `(() => {
-  // BattleStatusComponent is the only view with the bordered blue window columns.
+  // PartyViewComponent is the only view with the bordered blue window columns.
   const battleColumns = [...document.querySelectorAll('div.border-2.border-ff-border.bg-ff-window')];
   const names = [...document.querySelectorAll('span.truncate.font-bold')].map((s) => s.textContent.trim());
   const meters = [...document.querySelectorAll('[role=meter]')];
   const raw = document.body.innerHTML;
-  // The team view is the only one that renders a level label. The user's local
-  // edit gave the team view the same bordered columns as the battle view, so the
-  // column classes cannot be used to tell the two apart.
-  const isTeamView = raw.includes('>LV<');
+  // Both states now share one shell and both show LV, so the discriminator is
+  // whether enemy rows are present (enemies only render during a battle) and
+  // whether party rows show EXP (only rendered on the field).
+  const hasEnemies = battleColumns.length > 0 && battleColumns[0].querySelectorAll('span.truncate.font-bold').length > 0;
+  const hasExp = raw.includes('>EXP ');
   const view = raw.includes('Looking for process')
     ? 'SEARCHING'
-    : raw.includes('Reading FF8 data')
-      ? 'READING'
-      : isTeamView
-        ? 'TEAM'
-        : battleColumns.length >= 2
-          ? 'BATTLE'
-          : 'UNKNOWN';
+    : hasEnemies
+      ? 'BATTLE'
+      : hasExp
+        ? 'FIELD'
+        : 'SHELL';
   return JSON.stringify({
     view,
     characters: names,
@@ -126,11 +125,13 @@ while (Date.now() - start < DURATION_S * 1000) {
           `enemyCol=${state.enemyColumn} partyCol=${state.partyColumn} meters=${state.meters} ` +
           `${state.meterValues.length ? `atb=[${state.meterValues.join(',')}] ` : ''}${JSON.stringify(state.characters)}`
         );
-        if (state.meters > 0 && !shotTaken) {
+        const shotView = process.env.SHOT_VIEW ?? 'BATTLE';
+        const shouldShoot = state.view === shotView;
+        if (shouldShoot && !shotTaken) {
           shotTaken = true;
           const shot = await client.screenshot();
-          await writeFile(`atb-gauge-${client.port}.png`, Buffer.from(shot.data, 'base64'));
-          console.log(`           ^ screenshot -> atb-gauge-${client.port}.png`);
+          await writeFile(`${shotView.toLowerCase()}-${client.port}.png`, Buffer.from(shot.data, 'base64'));
+          console.log(`           ^ screenshot -> ${shotView.toLowerCase()}-${client.port}.png`);
         }
       }
     } catch (error) {

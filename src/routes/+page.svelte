@@ -1,8 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
 
-  import BattleStatusComponent from '../components/BattleStatusComponent/BattleStatusComponent.svelte';
-  import TeamStatusComponent from '../components/TeamStatusComponent/TeamStatusComponent.svelte';
+  import PartyViewComponent from '../components/PartyViewComponent/PartyViewComponent.svelte';
   import type { BattleCharacter, GameValue, GameValueDeltas, TeamMember } from '$lib/types/game';
 
   let processStatus = $state<'searching' | 'connected'>('searching');
@@ -25,27 +24,32 @@
     Array.from({ length: 3 }, (_, index) => ({ id: index + 1, name: `Party ${index + 1}` }))
   );
 
-  // Only occupied slots are displayed. An enemy slot is in use once the battle
-  // setup has written its max HP (which stays set after the enemy dies), and a
-  // party slot is in use when the engine has assigned it a team member (255 is
-  // the empty-slot marker).
-  const activeEnemies = $derived(enemies.filter((enemy) => (enemy.maxHealth ?? 0) > 0));
-  const activePartyMembers = $derived(
-    partyMembers.filter(
-      (member) => member.teamMemberId !== undefined && member.teamMemberId !== 255
-    )
+  // An enemy slot counts as occupied once the battle setup has written its max
+  // HP, and that value stays set after the enemy dies. It is therefore gated on
+  // the battle director actually being in a battle, or the left column would
+  // still be listing the last fight's opponents out on the field.
+  const visibleEnemies = $derived(
+    battleStarted ? enemies.filter((enemy) => (enemy.maxHealth ?? 0) > 0) : []
   );
 
-  const teamReady = $derived(teamMembers.every((member) => member.magic !== undefined));
-
-  $effect(() => {
-    for (const partyMember of partyMembers) {
-      const displayName =
-        teamMembers.find((member) => member.id === partyMember.teamMemberId)?.displayName ??
-        partyMember.name;
-      if (partyMember.displayName !== displayName) partyMember.displayName = displayName;
-    }
-  });
+  // A party slot is occupied when the engine has assigned it a team member; 255
+  // is the empty-slot marker. Those slots persist after a fight, which is what
+  // lets the same rows be shown both in battle and on the field. Level and EXP
+  // live on the team member rather than on the battle slot, so they are joined
+  // in by team member id.
+  const visibleParty = $derived(
+    partyMembers
+      .filter((member) => member.teamMemberId !== undefined && member.teamMemberId !== 255)
+      .map((member) => {
+        const teamMember = teamMembers.find((candidate) => candidate.id === member.teamMemberId);
+        return {
+          ...member,
+          displayName: teamMember?.displayName ?? member.name,
+          currentLevel: teamMember?.currentLevel,
+          currentExp: teamMember?.currentExp
+        };
+      })
+  );
 
   function assignValue(target: object | undefined, propertyName: string, value: GameValue): void {
     if (target) (target as Record<string, GameValue>)[propertyName] = value;
@@ -97,11 +101,11 @@
     <div class="flex flex-1 items-center justify-center p-6 text-xs">
       Looking for process FF8_EN.exe
     </div>
-  {:else if battleStarted}
-    <BattleStatusComponent enemies={activeEnemies} partyMembers={activePartyMembers} />
-  {:else if teamReady}
-    <TeamStatusComponent {teamMembers} />
   {:else}
-    <div class="flex flex-1 items-center justify-center p-6 text-xs">Reading FF8 data…</div>
+    <PartyViewComponent
+      enemies={visibleEnemies}
+      party={visibleParty}
+      {battleStarted}
+    />
   {/if}
 </div>
