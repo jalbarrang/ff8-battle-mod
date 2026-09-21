@@ -3,6 +3,7 @@ import isEqual from 'lodash/isEqual.js';
 
 import memoryAddressConfig from './config/memory-address-config';
 import { WindowsProcessMemory, type ProcessHandle } from './memory';
+import type { Ff8Snapshot } from '../../lib/types/ws-protocol';
 import type {
   GameValueDeltas,
   MemoryLocation,
@@ -55,14 +56,12 @@ export class Ff8ProcessWatcher {
   }
 
   /**
-   * Re-sends the current process status and every known game value. A renderer
-   * that mounts after the watcher has already connected (a reload, or a window
-   * recreated by `activate`) would otherwise never receive the initial
-   * snapshot, because deltas are only emitted when a value changes.
+   * Returns the current process status plus every known game value. A client
+   * that connects after the watcher has already read state (a reload, a new
+   * agent, or a window recreated by `activate`) would otherwise never receive
+   * the initial values, because deltas are only emitted when a value changes.
    */
-  publishSnapshot(): void {
-    this.callbacks.onStatus(this.process ? 'connected' : 'searching');
-
+  getSnapshot(): Ff8Snapshot {
     const deltas: GameValueDeltas = {};
     for (const [propertyName, values] of this.gameValues) {
       const transformer = memoryAddressConfig[propertyName]?.valueTransformerOut;
@@ -70,7 +69,7 @@ export class Ff8ProcessWatcher {
       deltas[propertyName] = { prevVal: null, newVal: transformer(values) };
     }
 
-    if (Object.keys(deltas).length > 0) this.callbacks.onDeltas(deltas);
+    return { status: this.process ? 'connected' : 'searching', deltas };
   }
 
   private watchLoop(): Effect.Effect<void> {

@@ -15,7 +15,7 @@ module.exports = {
       /^\/public($|\/)/,
       /^\/assets($|\/)/,
       /^\/patches($|\/)/,
-      /^\/node_modules\/(?!koffi(?:\/|$)|@koromix(?:$|\/koffi-win32-x64(?:\/|$))).+/,
+      /^\/node_modules\/(?!koffi(?:\/|$)|ws(?:\/|$)|@koromix(?:$|\/koffi-win32-x64(?:\/|$))).+/,
       /^\/\.(?:gitignore|npmrc)$/,
       /^\/(?:BUILD-NOTES|README)\.md$/,
       /^\/(?:forge|svelte|vite(?:\.[^.]+)?|tsconfig(?:\.[^.]+)?)\.config\.(?:cjs|js|ts)$/,

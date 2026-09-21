@@ -74,9 +74,3 @@ export interface GameValueDelta {
 }
 
 export type GameValueDeltas = Record<string, GameValueDelta>;
-
-export interface Ff8Api {
-  onGameValuesUpdated(callback: (deltas: GameValueDeltas) => void): () => void;
-  onProcessStatusChanged(callback: (status: ProcessStatus) => void): () => void;
-  requestSnapshot(): void;
-}

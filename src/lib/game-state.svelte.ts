@@ -1,4 +1,5 @@
 import { GUARDIAN_FORCES } from '$lib/gfs';
+import { connectFf8Socket } from '$lib/ff8-socket';
 import { itemName } from '$lib/items';
 import type {
   BattleCharacter,
@@ -14,9 +15,14 @@ import type {
 } from '$lib/types/game';
 
 // The renderer never polls memory itself. The Electron main-process watcher
-// pushes deltas over IPC and answers an explicit snapshot request. This module
-// owns the single subscription and the one cache of game state that every page
-// reads from, so navigating between tabs never re-requests or loses data.
+// pushes deltas over a loopback WebSocket and answers an explicit snapshot
+// request. This module owns the single subscription and the one cache of game
+// state that every page reads from, so navigating between tabs never
+// re-requests or loses data.
+//
+// Keeping the transport in the main process means the same stream can be
+// observed by any local WebSocket client (a test harness, an agent, curl for
+// `/state`) without attaching DevTools to the renderer.
 
 const TEAM_MEMBER_ROSTER: Array<Pick<TeamMember, 'id' | 'name'>> = [
   { id: 0, name: 'Squall' },
@@ -132,17 +138,16 @@ let initialized = false;
  */
 function init(): void {
   if (initialized) return;
-  if (typeof window === 'undefined' || !window.ff8) return;
+  if (typeof window === 'undefined') return;
   initialized = true;
 
-  window.ff8.onGameValuesUpdated(applyDeltas);
-  window.ff8.onProcessStatusChanged((status) => {
-    processStatus = status;
-    if (status === 'searching') battleStarted = false;
+  connectFf8Socket({
+    onDeltas: applyDeltas,
+    onStatus: (status) => {
+      processStatus = status;
+      if (status === 'searching') battleStarted = false;
+    }
   });
-  // The watcher only pushes changes, so a renderer that mounts after it has
-  // already connected has to ask for the current state explicitly.
-  window.ff8.requestSnapshot();
 }
 
 export const gameState = {

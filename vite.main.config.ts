@@ -16,6 +16,7 @@ export default defineConfig({
       external: [
         'electron',
         'koffi',
+        'ws',
         ...builtinModules,
         ...builtinModules.map((moduleName) => `node:${moduleName}`)
       ]

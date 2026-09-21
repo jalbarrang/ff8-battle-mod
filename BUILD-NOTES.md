@@ -36,9 +36,9 @@ The old `memoryjs` dependency was removed. `src/main/ff8/memory.ts` calls these 
 - `ReadProcessMemory`
 - `CloseHandle`
 
-The process is opened with `PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_VM_READ` only. The fork is read-only: there is no `WriteProcessMemory` binding, no write path in the watcher, and no renderer IPC that could modify the game.
+The process is opened with `PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_VM_READ` only. The fork is read-only: there is no `WriteProcessMemory` binding, no write path in the watcher, and the loopback WebSocket/HTTP bridge only broadcasts what the watcher already read.
 
-Koffi and `@koromix/koffi-win32-x64` are explicitly retained and unpacked from ASAR by `forge.config.cjs`.
+Koffi and `@koromix/koffi-win32-x64` are explicitly retained and unpacked from ASAR by `forge.config.cjs`. `ws` is a runtime dependency of the main process and is kept in ASAR as well; the renderer has no preload or IPC bridge and connects to the hub over `ws://127.0.0.1`.
 
 ## Node 26 Forge patches
 

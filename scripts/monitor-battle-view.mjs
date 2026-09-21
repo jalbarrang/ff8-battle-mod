@@ -1,14 +1,19 @@
 /**
- * Continuously samples the renderer DOM over CDP and records how the battle
- * view behaves. Used to tell apart "no data reached the component" from
- * "data reached it but the derived list stayed empty".
+ * Continuously samples the renderer DOM over CDP and records the game-data
+ * stream over the FF8 WebSocket hub. Used to tell apart "no data reached the
+ * component" from "data reached it but the derived list stayed empty".
+ *
+ * The WebSocket side replaces the old `window.ff8` IPC recorder, so this script
+ * no longer depends on the preload bridge.
  *
  * Usage: node scripts/monitor-battle-view.mjs <port,port> [seconds]
+ * Env:   FF8_WS_PORT (default 8174)
  */
 import { writeFile } from 'node:fs/promises';
 
 const PORTS = (process.argv[2] ?? '9222').split(',');
 const DURATION_S = Number(process.argv[3] ?? 120);
+const WS_PORT = Number(process.env.FF8_WS_PORT ?? 8174);
 
 const PROBE = `(() => {
   // PartyViewComponent is the only view with the bordered blue window columns.
@@ -34,35 +39,41 @@ const PROBE = `(() => {
     enemyColumn: battleColumns[0] ? battleColumns[0].querySelectorAll('span.truncate.font-bold').length : -1,
     partyColumn: battleColumns[1] ? battleColumns[1].querySelectorAll('span.truncate.font-bold').length : -1,
     meters: meters.length,
-    meterValues: meters.map((m) => Number(m.getAttribute('aria-valuenow'))),
-    ipc: window.__probe
-      ? { batches: window.__probe.batches, atbSamples: window.__probe.atb.length, sawAtbKey: window.__probe.sawAtbKey, sawEnemyHp: window.__probe.sawEnemyHp }
-      : null
+    meterValues: meters.map((m) => Number(m.getAttribute('aria-valuenow')))
   });
 })()`;
 
-// Records raw IPC traffic so "no gauge" can be split into "no data" vs "no render".
-const INSTALL_RECORDER = `(() => {
-  if (window.__probe) return 'already installed';
-  window.__probe = { batches: 0, atb: [], sawAtbKey: false, sawEnemyHp: false };
-  if (!window.ff8) return 'no ff8 api';
-  window.ff8.onGameValuesUpdated((d) => {
-    window.__probe.batches++;
-    if (d.atbEnemy1) { window.__probe.sawAtbKey = true; window.__probe.atb.push(d.atbEnemy1.newVal); }
-    if (d.currentHealthEnemy1) window.__probe.sawEnemyHp = true;
-  });
-  return 'installed';
-})()`;
+// --- game-data recorder over the WebSocket hub -----------------------------
+const probe = { connected: false, batches: 0, changedKeys: 0, atb: [], sawAtbKey: false, sawEnemyHp: false, status: null };
+const ws = new WebSocket(`ws://127.0.0.1:${WS_PORT}`);
+ws.addEventListener('open', () => {
+  probe.connected = true;
+  ws.send(JSON.stringify({ type: 'snapshot', id: 1 }));
+});
+ws.addEventListener('message', (event) => {
+  if (typeof event.data !== 'string') return;
+  const message = JSON.parse(event.data);
+  if (message.type === 'status') probe.status = message.status;
+  if (message.type !== 'deltas') return;
+  probe.batches++;
+  probe.changedKeys += Object.keys(message.deltas).length;
+  if (message.deltas.atbEnemy1) {
+    probe.sawAtbKey = true;
+    probe.atb.push(message.deltas.atbEnemy1.newVal);
+  }
+  if (message.deltas.currentHealthEnemy1) probe.sawEnemyHp = true;
+});
+ws.addEventListener('error', () => console.warn(`[ws] no hub on ws://127.0.0.1:${WS_PORT}`));
 
 async function connect(port) {
   const list = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();
   const page = list.find((t) => t.type === 'page' && t.url.includes('5173'));
   if (!page) return null;
 
-  const ws = new WebSocket(page.webSocketDebuggerUrl);
+  const socket = new WebSocket(page.webSocketDebuggerUrl);
   let nextId = 1;
   const pending = new Map();
-  ws.addEventListener('message', (event) => {
+  socket.addEventListener('message', (event) => {
     const message = JSON.parse(event.data);
     const entry = pending.get(message.id);
     if (!entry) return;
@@ -71,23 +82,23 @@ async function connect(port) {
     else entry.resolve(message.result);
   });
   await new Promise((resolve, reject) => {
-    ws.addEventListener('open', resolve, { once: true });
-    ws.addEventListener('error', reject, { once: true });
+    socket.addEventListener('open', resolve, { once: true });
+    socket.addEventListener('error', reject, { once: true });
   });
   return {
     port,
-    ws,
+    ws: socket,
     evaluate: (expression) =>
       new Promise((resolve, reject) => {
         const id = nextId++;
         pending.set(id, { resolve, reject });
-        ws.send(JSON.stringify({ id, method: 'Runtime.evaluate', params: { expression, returnByValue: true } }));
+        socket.send(JSON.stringify({ id, method: 'Runtime.evaluate', params: { expression, returnByValue: true } }));
       }),
     screenshot: () =>
       new Promise((resolve, reject) => {
         const id = nextId++;
         pending.set(id, { resolve, reject });
-        ws.send(JSON.stringify({ id, method: 'Page.captureScreenshot', params: { format: 'png' } }));
+        socket.send(JSON.stringify({ id, method: 'Page.captureScreenshot', params: { format: 'png' } }));
       })
   };
 }
@@ -97,11 +108,8 @@ if (clients.length === 0) {
   console.error('no renderers reachable');
   process.exit(1);
 }
-console.log(`watching ${clients.map((c) => c.port).join(', ')} for ${DURATION_S}s\n`);
-for (const client of clients) {
-  const result = await client.evaluate(INSTALL_RECORDER);
-  console.log(`[${client.port}] recorder: ${result.result.value}`);
-}
+console.log(`watching ${clients.map((c) => c.port).join(', ')} for ${DURATION_S}s`);
+console.log(`game data via ws://127.0.0.1:${WS_PORT}\n`);
 
 const history = clients.map(() => []);
 const timelines = clients.map(() => []);
@@ -154,3 +162,9 @@ for (const [index, client] of clients.entries()) {
     `maxMeters=${Math.max(0, ...states.map((s) => s.meters))}`
   );
 }
+console.log(
+  `[ws] connected=${probe.connected} status=${probe.status} batches=${probe.batches} ` +
+  `changedKeys=${probe.changedKeys} sawAtbKey=${probe.sawAtbKey} sawEnemyHp=${probe.sawEnemyHp} ` +
+  `atbSamples=${probe.atb.length}`
+);
+ws.close();

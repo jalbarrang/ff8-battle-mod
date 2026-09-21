@@ -14,15 +14,13 @@
   },
   "scripts": {
     "clean": "node scripts/clean.mjs",
-    "dev": "pnpm clean && svelte-kit sync && concurrently --kill-others --success first -n renderer,main,preload,electron -c cyan,green,magenta,yellow \"pnpm dev:renderer\" \"pnpm dev:main\" \"pnpm dev:preload\" \"pnpm dev:electron\"",
+    "dev": "pnpm clean && svelte-kit sync && concurrently --kill-others --success first -n renderer,main,electron -c cyan,green,yellow \"pnpm dev:renderer\" \"pnpm dev:main\" \"pnpm dev:electron\"",
     "dev:renderer": "vite dev --host 127.0.0.1",
     "dev:main": "vite build --config vite.main.config.ts --watch",
-    "dev:preload": "vite build --config vite.preload.config.ts --watch",
-    "dev:electron": "wait-on tcp:127.0.0.1:5173 .vite/build/main.cjs .vite/build/preload.cjs && cross-env VITE_DEV_SERVER_URL=http://127.0.0.1:5173 electron-forge start",
-    "build": "pnpm clean && pnpm build:renderer && pnpm build:main && pnpm build:preload",
+    "dev:electron": "wait-on tcp:127.0.0.1:5173 .vite/build/main.cjs && cross-env VITE_DEV_SERVER_URL=http://127.0.0.1:5173 electron-forge start",
+    "build": "pnpm clean && pnpm build:renderer && pnpm build:main",
     "build:renderer": "vite build",
     "build:main": "vite build --config vite.main.config.ts",
-    "build:preload": "vite build --config vite.preload.config.ts",
     "check": "pnpm check:svelte && pnpm check:native",
     "check:svelte": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:native": "node ./node_modules/typescript7/bin/tsc -p tsconfig.native.json",
@@ -34,7 +32,8 @@
     "effect": "4.0.0-rc.116",
     "electron-squirrel-startup": "1.0.1",
     "koffi": "3.3.1",
-    "lodash": "4.17.21"
+    "lodash": "4.17.21",
+    "ws": "8.21.3"
   },
   "devDependencies": {
     "@electron-forge/cli": "7.11.2",
@@ -47,6 +46,7 @@
     "@types/electron-squirrel-startup": "1.0.2",
     "@types/lodash": "4.17.25",
     "@types/node": "26.6.2",
+    "@types/ws": "8.18.1",
     "concurrently": "10.0.5",
     "cross-env": "10.1.0",
     "electron": "44.4.3",
